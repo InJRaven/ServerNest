@@ -1,5 +1,5 @@
 import { NestFactory } from '@nestjs/core';
-import { AppModule } from '@/module/app.module';
+import { AppModule } from '@/modules/app.module';
 import { Session, Database } from '@/config';
 
 async function bootstrap() {
@@ -12,4 +12,4 @@ async function bootstrap() {
 
   await app.listen(process.env.PORT ?? 3000);
 }
-bootstrap();
+void bootstrap();

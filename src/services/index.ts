@@ -1,7 +1,12 @@
+import { Provider } from '@nestjs/common';
 import { AppService } from './app.service';
 import { AuthService } from './auth.service';
 import { SchemaVerifierService } from './schema-verifier.service';
 
-const test = [AppService, AuthService, SchemaVerifierService];
+export const services: Provider[] = [
+  AppService,
+  AuthService,
+  SchemaVerifierService,
+];
 
-export { test };
+export { AppService, AuthService, SchemaVerifierService };

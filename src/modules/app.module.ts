@@ -1,10 +1,11 @@
 import { Module } from '@nestjs/common';
-import { AppController } from '@/controller/app.controller';
+import { AppController } from '@/controllers/app.controller';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Session, Database, TypeORMConfig } from '@/config';
-import { test } from '@/services';
-import { User } from '@/model/schema';
+import { services } from '@/services';
+import { model } from '@/model';
+import { schema } from '@/model/schema';
 
 @Module({
   imports: [
@@ -17,9 +18,9 @@ import { User } from '@/model/schema';
       inject: [ConfigService],
       useFactory: TypeORMConfig,
     }),
-    TypeOrmModule.forFeature([User]),
+    TypeOrmModule.forFeature(schema),
   ],
   controllers: [AppController],
-  providers: [Session, Database, ...test],
+  providers: [Session, Database, ...model, ...services],
 })
 export class AppModule {}
