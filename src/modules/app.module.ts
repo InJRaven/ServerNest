@@ -4,8 +4,8 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Session, Database, TypeORMConfig } from '@/config';
 import { services } from '@/services';
-import { model } from '@/model';
-import { schema } from '@/model/schema';
+import { modelRepository } from '@/model/repository';
+import { modeEntities } from '@/model/entity';
 
 @Module({
   imports: [
@@ -18,9 +18,9 @@ import { schema } from '@/model/schema';
       inject: [ConfigService],
       useFactory: TypeORMConfig,
     }),
-    TypeOrmModule.forFeature(schema),
+    TypeOrmModule.forFeature(modeEntities),
   ],
   controllers: [AppController],
-  providers: [Session, Database, ...model, ...services],
+  providers: [Session, Database, ...modelRepository, ...services],
 })
 export class AppModule {}

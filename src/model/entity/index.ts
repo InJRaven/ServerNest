@@ -1,7 +1,7 @@
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { User } from './user.schema';
+import { UserEnity } from './user.enity';
 
 type EntitiesArg = Parameters<typeof TypeOrmModule.forFeature>[0];
 
-export { User };
-export const schema: EntitiesArg = [User];
+export { UserEnity };
+export const modeEntities: EntitiesArg = [UserEnity];

@@ -5,16 +5,16 @@ import {
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Request } from 'express';
-import { UserModel } from '@/model';
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcrypt';
 import { randomBytes } from 'crypto';
-import { LoginDTO, RegisterDTO } from '@/DTO/AuthDTO';
+import { LoginDTO, RegisterDTO } from '@/model/dto';
+import { UserRepository } from '@/model/repository';
 
 @Injectable()
 class AuthService {
   constructor(
-    private readonly userModel: UserModel,
+    private readonly userModel: UserRepository,
     private readonly configService: ConfigService,
   ) {}
 

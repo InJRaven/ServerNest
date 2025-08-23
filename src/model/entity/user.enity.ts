@@ -7,7 +7,7 @@ import {
 } from 'typeorm';
 
 @Entity({ name: 'User' })
-class User {
+class UserEnity {
   @PrimaryColumn()
   id: string;
 
@@ -62,4 +62,4 @@ class User {
   updatedAt: Date;
 }
 
-export { User };
+export { UserEnity };

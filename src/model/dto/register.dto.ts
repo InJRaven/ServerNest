@@ -1,7 +1,10 @@
-import { UserDTO } from '../UserDTO';
 import { IsEmail, IsString, MinLength } from 'class-validator';
+import { UserDTO } from './';
 
-export class LoginDTO extends UserDTO {
+export class RegisterDTO extends UserDTO {
+  @IsString()
+  username: string;
+
   @IsEmail()
   email: string;
 

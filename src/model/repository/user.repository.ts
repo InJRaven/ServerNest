@@ -1,16 +1,16 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { User } from './schema/user.schema';
+import { UserEnity } from '../entity/user.enity';
 
 @Injectable()
-class UserModel {
+class UserRepository {
   constructor(
-    @InjectRepository(User)
-    private readonly userRepository: Repository<User>,
+    @InjectRepository(UserEnity)
+    private readonly userRepository: Repository<UserEnity>,
   ) {}
 
-  async findByEmail(email: string): Promise<User | null> {
+  async findByEmail(email: string): Promise<UserEnity | null> {
     try {
       return await this.userRepository.findOne({ where: { email } });
     } catch (error) {
@@ -19,7 +19,7 @@ class UserModel {
     }
   }
 
-  async findByUsername(username: string): Promise<User | null> {
+  async findByUsername(username: string): Promise<UserEnity | null> {
     try {
       return await this.userRepository.findOne({ where: { username } });
     } catch (error) {
@@ -28,12 +28,15 @@ class UserModel {
     }
   }
 
-  async createUser(data: Partial<User>): Promise<User> {
+  async createUser(data: Partial<UserEnity>): Promise<UserEnity> {
     const user = this.userRepository.create(data);
     return await this.userRepository.save(user);
   }
 
-  async updateUser(id: string, data: Partial<User>): Promise<User | null> {
+  async updateUser(
+    id: string,
+    data: Partial<UserEnity>,
+  ): Promise<UserEnity | null> {
     await this.userRepository.update(id, data);
     return this.userRepository.findOne({ where: { id } });
   }
@@ -48,4 +51,4 @@ class UserModel {
     }
   }
 }
-export { UserModel };
+export { UserRepository };
