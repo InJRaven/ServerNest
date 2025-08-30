@@ -7,7 +7,7 @@ import {
 } from 'typeorm';
 
 @Entity({ name: 'User' })
-class UserEnity {
+class UserEntity {
   @PrimaryColumn()
   id: string;
 
@@ -53,7 +53,7 @@ class UserEnity {
   roles: 'admin' | 'user' | 'mod' | 'guest';
 
   @Column({ default: false, nullable: true })
-  is_admin: boolean;
+  is_super_admin: boolean;
 
   @CreateDateColumn()
   createdAt: Date;
@@ -62,4 +62,4 @@ class UserEnity {
   updatedAt: Date;
 }
 
-export { UserEnity };
+export { UserEntity };

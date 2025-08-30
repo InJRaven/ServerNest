@@ -73,6 +73,7 @@ class AuthService {
       userId: user.id,
       email: user.email,
       role: user.roles,
+      isSuperAdmin: user.is_super_admin,
     };
 
     const accessToken = this.createAccessToken(payload);

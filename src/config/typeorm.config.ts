@@ -1,6 +1,6 @@
 import { ConfigService } from '@nestjs/config';
 import { TypeOrmModuleOptions } from '@nestjs/typeorm';
-import { modeEntities } from '@/model/entity';
+import { Entities } from '@/model/entity';
 
 const TypeORMConfig = (configService: ConfigService): TypeOrmModuleOptions => {
   return {
@@ -10,7 +10,7 @@ const TypeORMConfig = (configService: ConfigService): TypeOrmModuleOptions => {
     username: configService.get('DB_USER'),
     password: configService.get('DB_PASSWORD'),
     database: configService.get('DB_DATABASE'),
-    entities: modeEntities,
+    entities: Entities,
     synchronize: true,
   };
 };
