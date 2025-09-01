@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import { v4 as uuidv4 } from 'uuid';
 import { UserEntity } from '../entity/user.entity';
 
 @Injectable()
@@ -37,7 +38,7 @@ class UserRepository {
   }
 
   async createUser(data: Partial<UserEntity>): Promise<UserEntity> {
-    const user = this.userRepository.create(data);
+    const user = this.userRepository.create({ id: uuidv4(), ...data });
     return await this.userRepository.save(user);
   }
 

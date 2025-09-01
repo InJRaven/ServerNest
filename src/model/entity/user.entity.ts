@@ -1,14 +1,14 @@
 import {
   Entity,
   Column,
-  PrimaryColumn,
+  PrimaryGeneratedColumn,
   CreateDateColumn,
   UpdateDateColumn,
 } from 'typeorm';
 
 @Entity({ name: 'User' })
 class UserEntity {
-  @PrimaryColumn()
+  @PrimaryGeneratedColumn('uuid')
   id: string;
 
   @Column({ unique: true })
@@ -17,25 +17,25 @@ class UserEntity {
   @Column({ unique: true })
   email: string;
 
-  @Column()
+  @Column({ nullable: true })
   first_name: string;
 
-  @Column()
+  @Column({ nullable: true })
   last_name: string;
 
-  @Column()
+  @Column({ nullable: true })
   full_name: string;
 
   @Column({ default: false })
   email_verified: boolean;
 
-  @Column()
+  @Column({ nullable: true })
   occupation: string;
 
-  @Column()
+  @Column({ nullable: true })
   company_name: string;
 
-  @Column()
+  @Column({ nullable: true })
   phone: string;
 
   @Column({ nullable: true })
@@ -47,7 +47,7 @@ class UserEntity {
   @Column({
     type: 'enum',
     enum: ['admin', 'user', 'mod', 'guest'],
-    default: 'user',
+    default: 'admin',
     nullable: true,
   })
   roles: 'admin' | 'user' | 'mod' | 'guest';

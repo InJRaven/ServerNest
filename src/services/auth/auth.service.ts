@@ -34,6 +34,7 @@ class AuthService {
   }
 
   async register(body: RegisterDTO) {
+    console.log(body);
     const { username, email, password, ...rest } = body;
 
     const exitingEmail = await this.userModel.findByEmail(email);
