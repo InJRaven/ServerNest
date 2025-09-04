@@ -2,6 +2,8 @@ import { Module, Global } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { TypeORMConfig } from '@/config';
+import { modelRepository } from '@/model/repository';
+import { UserEntity } from '@/model/entity';
 
 @Global()
 @Module({
@@ -12,7 +14,9 @@ import { TypeORMConfig } from '@/config';
       inject: [ConfigService],
       useFactory: TypeORMConfig,
     }),
+    TypeOrmModule.forFeature([UserEntity]),
   ],
-  exports: [TypeOrmModule],
+  providers: [...modelRepository],
+  exports: [TypeOrmModule, ...modelRepository],
 })
 export class DatabaseModule {}

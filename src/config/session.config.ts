@@ -22,8 +22,9 @@ class Session {
       secret: this.configService.get<string>('SESSION_SECRET_KEY') || '',
       resave: false,
       saveUninitialized: false,
+      rolling: true,
       cookie: {
-        maxAge: 30 * 60 * 1000,
+        maxAge: 30 * 24 * 60 * 60 * 1000,
         httpOnly: true,
         secure: false,
         sameSite: 'lax',

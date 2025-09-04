@@ -8,19 +8,21 @@ import { ConfigService } from '@nestjs/config';
 import { Request } from 'express';
 import jwt from 'jsonwebtoken';
 import { UserRepository } from '@/model/repository';
+import { TokenService } from '@/services/auth';
 
 type AppRole = 'admin' | 'user' | 'mod' | 'guest';
 
-interface JwtPayload {
+interface JwtPayload extends jwt.JwtPayload {
   userId: string;
-  email: string;
   role: AppRole;
   isSuperAdmin?: boolean;
 }
+
 @Injectable()
 class JwtAuthGuard implements CanActivate {
   constructor(
     private readonly configService: ConfigService,
+    private readonly tokens: TokenService,
     private readonly users: UserRepository,
   ) {}
 
@@ -35,12 +37,10 @@ class JwtAuthGuard implements CanActivate {
       });
     }
     const token = header.slice(7);
+    const jwtSecret = this.configService.get<string>('JWT_SECRET_KEY');
+    if (!jwtSecret) throw new Error('JWT_SECRET_KEY missing');
     try {
-      const decoded = jwt.verify(
-        token,
-        this.configService.get<string>('JWT_SECRET') || 'secret',
-        { ignoreExpiration: true },
-      ) as JwtPayload;
+      const decoded = this.tokens.decodedAccessToken(token) as JwtPayload;
 
       const user = await this.users.findById(decoded.userId);
       if (!user) {
@@ -49,11 +49,9 @@ class JwtAuthGuard implements CanActivate {
           message: 'User not found',
         });
       }
-      req.user = {
+      req.auth = {
         id: user.id,
         email: user.email,
-        username: user.username,
-        full_name: user.full_name,
         roles: user.roles,
         isSuperAdmin: user.is_super_admin === true,
       };
