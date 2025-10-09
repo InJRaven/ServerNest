@@ -8,12 +8,14 @@ import bcrypt from 'bcrypt';
 import { LoginDTO, RegisterDTO } from '@/model/dto';
 import { UserRepository } from '@/model/repository';
 import { TokenService } from './token.service';
+import { RedisConfig } from '@/config';
 
 @Injectable()
 class AuthService {
   constructor(
     private readonly userModel: UserRepository,
     private readonly tokens: TokenService,
+    private readonly redisConfig: RedisConfig,
   ) {}
 
   async register(body: RegisterDTO) {
@@ -44,7 +46,7 @@ class AuthService {
   async login(
     body: LoginDTO,
     req: Request,
-  ): Promise<{ message: string; access_token: string }> {
+  ): Promise<{ message: string; access_token: string; refresh_token: string }> {
     const { email, password } = body;
     const user = await this.userModel.findByEmail(email);
     if (!user) throw new UnauthorizedException('Invalid email or password');
@@ -61,18 +63,27 @@ class AuthService {
 
     const accessToken = this.tokens.createAccessToken(payload);
     const refreshToken = this.tokens.createRefreshToken();
+
     if (req.session) {
-      req.session.refreshToken = refreshToken;
-      req.session.userId = user.id;
-      req.session.createdAt = Date.now();
+      req.session.accessToken = accessToken;
+
+      /** Save Token To Redis */
+      await this.tokens.saveToken(req.sessionID, accessToken, refreshToken);
     }
+
     return {
       message: 'Login successful',
       access_token: accessToken,
+      refresh_token: refreshToken,
     };
   }
 
   async logout(req: Request): Promise<{ message: string }> {
+    // Xóa token trong Redis nếu có userId
+    if (req.session && req.session.userId) {
+      const redis = this.redisConfig.getClient();
+      await redis.del(`auth:${req.session.userId}:tokens`);
+    }
     return new Promise((resolve, reject) => {
       if (req.session) {
         req.session.destroy((err) => {
