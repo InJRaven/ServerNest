@@ -9,6 +9,7 @@ import { LoginDTO, RegisterDTO } from '@/model/dto';
 import { UserRepository } from '@/model/repository';
 import { TokenService } from './token.service';
 import { RedisConfig } from '@/config';
+import jwt, { JwtPayload } from 'jsonwebtoken';
 
 @Injectable()
 class AuthService {
@@ -79,10 +80,23 @@ class AuthService {
   }
 
   async logout(req: Request): Promise<{ message: string }> {
-    // Xóa token trong Redis nếu có userId
-    if (req.session && req.session.userId) {
-      const redis = this.redisConfig.getClient();
-      await redis.del(`auth:${req.session.userId}:tokens`);
+    const header = req.headers['authorization'];
+    const refreshToken = req.header['x-refresh-token'] || '';
+    if (!header || !header.startsWith('Bearer ')) {
+      throw new UnauthorizedException({
+        code: 'NO_TOKEN',
+        message: 'Missing Bearer token',
+      });
+    }
+    const token = header.slice(7);
+    try {
+      const exp = (jwt.decode(token) as JwtPayload)?.exp;
+      if (exp) {
+        await this.tokens.saveTokenToBlacklist(token, refreshToken, exp);
+      }
+    } catch (error) {
+      console.log('[logout] Blacklist step failed');
+      console.error(error);
     }
     return new Promise((resolve, reject) => {
       if (req.session) {
