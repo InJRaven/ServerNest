@@ -1,24 +1,36 @@
 import { Body, Controller, Post, Req } from '@nestjs/common';
 import { Request } from 'express';
 import { AuthService } from '@/services/auth';
-import { RegisterDTO, LoginDTO } from '@/model/dto';
+import {
+  RegisterDTO,
+  LoginDTO,
+  VerifyEmailDTO,
+  ResendOTPDTO,
+} from '@/model/dto';
 
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
   @Post('register')
-  register(@Body() body: RegisterDTO) {
-    return this.authService.register(body);
+  async register(@Body() body: RegisterDTO) {
+    return await this.authService.register(body);
   }
-
+  @Post('verify-email')
+  async verifyEmail(@Body() body: VerifyEmailDTO) {
+    return await this.authService.verifyEmail(body);
+  }
+  @Post('resend-otp')
+  async resendOTP(@Body() body: ResendOTPDTO) {
+    return await this.authService.resendOTP(body);
+  }
   @Post('login')
-  login(@Body() body: LoginDTO, @Req() req: Request) {
-    return this.authService.login(body, req);
+  async login(@Body() body: LoginDTO, @Req() req: Request) {
+    return await this.authService.login(body, req);
   }
 
   @Post('logout')
-  logout(@Req() req: Request) {
-    return this.authService.logout(req);
+  async logout(@Req() req: Request) {
+    return await this.authService.logout(req);
   }
 }

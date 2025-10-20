@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import jwt from 'jsonwebtoken';
-import { randomBytes } from 'crypto';
+import { randomBytes, randomInt } from 'crypto';
 import { RedisConfig } from '@/config';
 
 @Injectable()
@@ -86,6 +86,31 @@ class TokenService {
     const tokens = await redisClient.get(`auth:session:${id}:tokens`);
     if (!tokens) return null;
     return JSON.parse(tokens);
+  }
+
+  /** Create OTP */
+  async createOTP(email: string): Promise<string> {
+    const otp = randomInt(100000, 999999).toString();
+    const redisClient = this.redisConfig.getClient();
+    await redisClient.set(`otp:${email}`, otp, 'EX', 300);
+    return otp;
+  }
+
+  async verifyOTP(email: string, otp: string): Promise<boolean> {
+    const store = await this.redisConfig.getClient().get(`otp:${email}`);
+    return store === otp;
+  }
+  async removeOTP(email: string) {
+    await this.redisConfig.getClient().del(`otp:${email}`);
+  }
+  async setOtpCooldown(email: string): Promise<void> {
+    const key = `otp_cooldown:${email}`;
+    await this.redisConfig.getClient().set(key, '1', 'EX', 60);
+  }
+  async isOtpCooldown(email: string): Promise<boolean> {
+    return (
+      (await this.redisConfig.getClient().exists(`otp_cooldown:${email}`)) === 1
+    );
   }
 }
 export { TokenService };

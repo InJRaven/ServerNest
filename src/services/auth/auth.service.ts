@@ -5,18 +5,23 @@ import {
 } from '@nestjs/common';
 import { Request } from 'express';
 import bcrypt from 'bcrypt';
-import { LoginDTO, RegisterDTO } from '@/model/dto';
+import {
+  LoginDTO,
+  RegisterDTO,
+  ResendOTPDTO,
+  VerifyEmailDTO,
+} from '@/model/dto';
 import { UserRepository } from '@/model/repository';
 import { TokenService } from './token.service';
-import { RedisConfig } from '@/config';
 import jwt, { JwtPayload } from 'jsonwebtoken';
+import { EmailService } from './email.service';
 
 @Injectable()
 class AuthService {
   constructor(
     private readonly userModel: UserRepository,
     private readonly tokens: TokenService,
-    private readonly redisConfig: RedisConfig,
+    private readonly emailService: EmailService,
   ) {}
 
   async register(body: RegisterDTO) {
@@ -40,10 +45,48 @@ class AuthService {
       password: hashedPassword,
       ...rest,
     });
-
+    const otp = await this.tokens.createOTP(newUser.email);
+    await this.emailService.sendOTPEmail(email, otp);
     return { message: 'Registration successful', userId: newUser.id };
   }
 
+  async verifyEmail(body: VerifyEmailDTO) {
+    const { email, otp } = body;
+    const user = await this.userModel.findByEmail(email);
+    if (!user) throw new BadRequestException('User does not exist');
+    const isValid = await this.tokens.verifyOTP(user.email, otp);
+    if (!isValid) throw new BadRequestException('Invalid or expired OTP');
+
+    await this.userModel.updateUser(user.id, { email_verified: true });
+    await this.tokens.removeOTP(user.email);
+    console.log(
+      `[VerifyOTP] User ${email} has successfully verified their email.`,
+    );
+    return { message: 'Account verification successful' };
+  }
+
+  async resendOTP(body: ResendOTPDTO) {
+    const { email } = body;
+    const user = await this.userModel.findByEmail(email);
+    if (!user) throw new BadRequestException('User does not exist');
+
+    if (user.email_verified) return { message: 'Account already verified.' };
+
+    const isCooldown = await this.tokens.isOtpCooldown(user.email);
+    if (isCooldown)
+      throw new BadRequestException(
+        'Please wait 60 seconds before requesting a new OTP.',
+      );
+
+    const otp = await this.tokens.createOTP(user.email);
+    await this.emailService.sendOTPEmail(email, otp);
+
+    await this.tokens.setOtpCooldown(user.id);
+
+    console.log(`[ResendOTP] New OTP sent to ${email}`);
+
+    return { message: 'A new OTP has been sent to your email.' };
+  }
   async login(
     body: LoginDTO,
     req: Request,
