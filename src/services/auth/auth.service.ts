@@ -29,7 +29,7 @@ class AuthService {
 
     const exitingEmail = await this.userModel.findByEmail(email);
     if (exitingEmail) {
-      throw new BadRequestException('Username is already in use');
+      throw new BadRequestException('Email is already in use');
     }
 
     const exitingUserName = await this.userModel.findByUsername(username);
@@ -46,6 +46,7 @@ class AuthService {
       ...rest,
     });
     const otp = await this.tokens.createOTP(newUser.email);
+    console.log(otp);
     await this.emailService.sendOTPEmail(email, otp);
     return { message: 'Registration successful', userId: newUser.id };
   }
