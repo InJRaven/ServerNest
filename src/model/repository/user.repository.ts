@@ -8,20 +8,20 @@ import { UserEntity } from '../entity/user.entity';
 class UserRepository {
   constructor(
     @InjectRepository(UserEntity)
-    private readonly userRepository: Repository<UserEntity>,
+    private readonly repository: Repository<UserEntity>,
   ) {}
 
   async findById(id: string): Promise<UserEntity | null> {
     try {
-      return await this.userRepository.findOne({ where: { id } });
+      return await this.repository.findOne({ where: { id } });
     } catch (error) {
-      console.error('Error finding user by email:', error);
+      console.error('Error finding user by id:', error);
       return null;
     }
   }
   async findByEmail(email: string): Promise<UserEntity | null> {
     try {
-      return await this.userRepository.findOne({ where: { email } });
+      return await this.repository.findOne({ where: { email } });
     } catch (error) {
       console.error('Error finding user by email:', error);
       return null;
@@ -30,7 +30,7 @@ class UserRepository {
 
   async findByUsername(username: string): Promise<UserEntity | null> {
     try {
-      return await this.userRepository.findOne({ where: { username } });
+      return await this.repository.findOne({ where: { username } });
     } catch (error) {
       console.error('Error finding user by username:', error);
       return null;
@@ -38,21 +38,21 @@ class UserRepository {
   }
 
   async createUser(data: Partial<UserEntity>): Promise<UserEntity> {
-    const user = this.userRepository.create({ id: uuidv4(), ...data });
-    return await this.userRepository.save(user);
+    const user = this.repository.create({ id: uuidv4(), ...data });
+    return await this.repository.save(user);
   }
 
   async updateUser(
     id: string,
     data: Partial<UserEntity>,
   ): Promise<UserEntity | null> {
-    await this.userRepository.update(id, data);
-    return this.userRepository.findOne({ where: { id } });
+    await this.repository.update(id, data);
+    return this.repository.findOne({ where: { id } });
   }
 
   async deleteUser(id: string): Promise<boolean> {
     try {
-      const result = await this.userRepository.delete(id);
+      const result = await this.repository.delete(id);
       return (result.affected ?? 0) > 0;
     } catch (error) {
       console.error('Error deleting user:', error);
