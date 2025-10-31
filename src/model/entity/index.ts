@@ -1,29 +1,36 @@
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { UserEntity } from './user.entity';
-import { ArtistsEnity } from './artists.enity';
-import { GenresEnity } from './genres.enity';
-import { AlbumsEnity } from './albums.enity';
-import { SongEnity } from './song.enity';
-import { SongGenresEnity } from './songGenres.enity';
-import { SongArtistsEnity } from './songArtists.enity';
+import { AdminEntity } from './admin.enity';
+import {
+  UserEntity,
+  GenresEntity,
+  ArtistsEntity,
+  AlbumsEntity,
+  SongEntity,
+  SongGenresEntity,
+  SongArtistsEntity,
+} from './client';
+
 type EntitiesArg = Parameters<typeof TypeOrmModule.forFeature>[0];
 
 export {
+  AdminEntity,
   UserEntity,
-  ArtistsEnity,
-  GenresEnity,
-  AlbumsEnity,
-  SongEnity,
-  SongGenresEnity,
-  SongArtistsEnity,
+  GenresEntity,
+  ArtistsEntity,
+  AlbumsEntity,
+  SongEntity,
+  SongGenresEntity,
+  SongArtistsEntity,
 };
 
 export const Entities: EntitiesArg = [
+  AdminEntity,
   UserEntity,
-  ArtistsEnity,
-  GenresEnity,
-  AlbumsEnity,
-  SongEnity,
-  SongGenresEnity,
-  SongArtistsEnity,
+  UserEntity,
+  GenresEntity,
+  ArtistsEntity,
+  AlbumsEntity,
+  SongEntity,
+  SongGenresEntity,
+  SongArtistsEntity,
 ];

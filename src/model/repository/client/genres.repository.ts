@@ -1,4 +1,4 @@
-import { GenresEnity } from '@/model/entity';
+import { GenresEntity } from '@/model/entity';
 import { Injectable, ConflictException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -7,11 +7,11 @@ import { v4 as uuidv4 } from 'uuid';
 @Injectable()
 class GenresRepository {
   constructor(
-    @InjectRepository(GenresEnity)
-    private readonly repository: Repository<GenresEnity>,
+    @InjectRepository(GenresEntity)
+    private readonly repository: Repository<GenresEntity>,
   ) {}
 
-  async createGenre(data: Partial<GenresEnity>): Promise<GenresEnity> {
+  async createGenre(data: Partial<GenresEntity>): Promise<GenresEntity> {
     try {
       const genre = this.repository.create({ id: uuidv4(), ...data });
       return await this.repository.save(genre);
@@ -25,8 +25,8 @@ class GenresRepository {
 
   async updateGenre(
     id: string,
-    data: Partial<GenresEnity>,
-  ): Promise<GenresEnity | null> {
+    data: Partial<GenresEntity>,
+  ): Promise<GenresEntity | null> {
     try {
       const result = await this.repository.update(id, data);
       if (result.affected === 0) {
@@ -42,7 +42,7 @@ class GenresRepository {
     }
   }
 
-  async findById(id: string): Promise<GenresEnity | null> {
+  async findById(id: string): Promise<GenresEntity | null> {
     try {
       return await this.repository.findOne({ where: { id } });
     } catch (error) {
@@ -51,7 +51,7 @@ class GenresRepository {
     }
   }
 
-  async findByName(name: string): Promise<GenresEnity | null> {
+  async findByName(name: string): Promise<GenresEntity | null> {
     try {
       return await this.repository.findOne({ where: { name } });
     } catch (error) {
@@ -59,7 +59,7 @@ class GenresRepository {
       return null;
     }
   }
-  async findAll(): Promise<GenresEnity[]> {
+  async findAll(): Promise<GenresEntity[]> {
     return await this.repository.find({
       order: { name: 'ASC' },
     });

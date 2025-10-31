@@ -11,15 +11,16 @@ import {
   ResendOTPDTO,
   VerifyEmailDTO,
 } from '@/model/dto';
-import { UserRepository } from '@/model/repository';
+
 import { TokenService } from './token.service';
 import jwt, { JwtPayload } from 'jsonwebtoken';
 import { EmailService } from './email.service';
+import { AdminRepository } from '@/model/repository';
 
 @Injectable()
 class AuthService {
   constructor(
-    private readonly userModel: UserRepository,
+    private readonly admins: AdminRepository,
     private readonly tokens: TokenService,
     private readonly emailService: EmailService,
   ) {}
@@ -27,19 +28,19 @@ class AuthService {
   async register(body: RegisterDTO) {
     const { username, email, password, ...rest } = body;
 
-    const exitingEmail = await this.userModel.findByEmail(email);
+    const exitingEmail = await this.admins.findByEmail(email);
     if (exitingEmail) {
       throw new BadRequestException('Email is already in use');
     }
 
-    const exitingUserName = await this.userModel.findByUsername(username);
-    if (exitingUserName) {
+    const exitingAdminName = await this.admins.findByName(username);
+    if (exitingAdminName) {
       throw new BadRequestException('User Name đã được sử dụng');
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    const newUser = await this.userModel.createUser({
+    const newUser = await this.admins.createAdmin({
       username,
       email,
       password: hashedPassword,
@@ -53,12 +54,12 @@ class AuthService {
 
   async verifyEmail(body: VerifyEmailDTO) {
     const { email, otp } = body;
-    const user = await this.userModel.findByEmail(email);
+    const user = await this.admins.findByEmail(email);
     if (!user) throw new BadRequestException('User does not exist');
     const isValid = await this.tokens.verifyOTP(user.email, otp);
     if (!isValid) throw new BadRequestException('Invalid or expired OTP');
 
-    await this.userModel.updateUser(user.id, { email_verified: true });
+    await this.admins.updateAdmin(user.id, { email_verified: true });
     await this.tokens.removeOTP(user.email);
     console.log(
       `[VerifyOTP] User ${email} has successfully verified their email.`,
@@ -68,7 +69,7 @@ class AuthService {
 
   async resendOTP(body: ResendOTPDTO) {
     const { email } = body;
-    const user = await this.userModel.findByEmail(email);
+    const user = await this.admins.findByEmail(email);
     if (!user) throw new BadRequestException('User does not exist');
 
     if (user.email_verified) return { message: 'Account already verified.' };
@@ -93,7 +94,7 @@ class AuthService {
     req: Request,
   ): Promise<{ message: string; access_token: string; refresh_token: string }> {
     const { email, password } = body;
-    const user = await this.userModel.findByEmail(email);
+    const user = await this.admins.findByEmail(email);
     if (!user) throw new UnauthorizedException('Invalid email or password');
 
     const isMatch = await bcrypt.compare(password, user.password);

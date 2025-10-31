@@ -8,7 +8,7 @@ declare module 'express-serve-static-core' {
       roles: AppRole;
       isSuperAdmin: boolean;
     };
-    user?: {
+    admin?: {
       id: string;
       username?: string;
       email?: string;

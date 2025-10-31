@@ -1,5 +1,5 @@
 import { Provider } from '@nestjs/common';
-import { UserRepository } from './user.repository';
-
-export { UserRepository };
-export const modelRepository: Provider[] = [UserRepository];
+import { UserRepository } from './client/user.repository';
+import { AdminRepository } from './admin.repository';
+export { AdminRepository, UserRepository };
+export const modelRepository: Provider[] = [AdminRepository, UserRepository];

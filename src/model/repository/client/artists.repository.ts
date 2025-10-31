@@ -1,4 +1,4 @@
-import { ArtistsEnity } from '@/model/entity';
+import { ArtistsEntity } from '@/model/entity';
 import { ConflictException, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -7,11 +7,11 @@ import { v4 as uuidv4 } from 'uuid';
 @Injectable()
 class ArtistsRepository {
   constructor(
-    @InjectRepository(ArtistsEnity)
-    private readonly repository: Repository<ArtistsEnity>,
+    @InjectRepository(ArtistsEntity)
+    private readonly repository: Repository<ArtistsEntity>,
   ) {}
 
-  async createArtist(data: Partial<ArtistsEnity>): Promise<ArtistsEnity> {
+  async createArtist(data: Partial<ArtistsEntity>): Promise<ArtistsEntity> {
     try {
       const artist = this.repository.create({ id: uuidv4(), ...data });
       return await this.repository.save(artist);
@@ -25,8 +25,8 @@ class ArtistsRepository {
 
   async updateArtist(
     id: string,
-    data: Partial<ArtistsEnity>,
-  ): Promise<ArtistsEnity | null> {
+    data: Partial<ArtistsEntity>,
+  ): Promise<ArtistsEntity | null> {
     try {
       const result = await this.repository.update(id, data);
       if (result.affected === 0) {
@@ -40,7 +40,7 @@ class ArtistsRepository {
       throw error;
     }
   }
-  async findById(id: string): Promise<ArtistsEnity | null> {
+  async findById(id: string): Promise<ArtistsEntity | null> {
     try {
       return await this.repository.findOne({ where: { id } });
     } catch (error) {
@@ -49,11 +49,11 @@ class ArtistsRepository {
     }
   }
 
-  async findAll(): Promise<ArtistsEnity[]> {
+  async findAll(): Promise<ArtistsEntity[]> {
     return await this.repository.find();
   }
 
-  async findAllWithAlbums(): Promise<ArtistsEnity[]> {
+  async findAllWithAlbums(): Promise<ArtistsEntity[]> {
     return await this.repository.find({
       relations: ['Albums'],
       order: { name: 'ASC' },
@@ -67,7 +67,7 @@ class ArtistsRepository {
     return await this.repository.count();
   }
 
-  async searchByName(searchTerm: string): Promise<ArtistsEnity[]> {
+  async searchByName(searchTerm: string): Promise<ArtistsEntity[]> {
     return await this.repository
       .createQueryBuilder('artist')
       .where('artist.name ILIKE :searchTerm', { searchTerm: `%${searchTerm}%` })

@@ -1,10 +1,4 @@
-import {
-  IsOptional,
-  IsString,
-  IsEnum,
-  IsBoolean,
-  IsPhoneNumber,
-} from 'class-validator';
+import { IsOptional, IsString, IsPhoneNumber } from 'class-validator';
 
 export class UserDTO {
   @IsOptional()
@@ -34,12 +28,4 @@ export class UserDTO {
   @IsOptional()
   @IsString()
   language?: string;
-
-  @IsOptional()
-  @IsEnum(['admin', 'user', 'mod', 'guest'])
-  roles?: 'admin' | 'user' | 'mod' | 'guest';
-
-  @IsOptional()
-  @IsBoolean()
-  is_admin?: boolean;
 }

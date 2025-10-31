@@ -7,10 +7,10 @@ import {
   OneToMany,
 } from 'typeorm';
 
-import { AlbumsEnity } from './albums.enity';
-import { SongArtistsEnity } from './songArtists.enity';
+import { AlbumsEntity } from './albums.entity';
+import { SongArtistsEntity } from './songArtists.entity';
 @Entity({ name: 'Artists' })
-class ArtistsEnity {
+class ArtistsEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
@@ -35,10 +35,10 @@ class ArtistsEnity {
   @UpdateDateColumn()
   updatedAt: Date;
 
-  @OneToMany(() => AlbumsEnity, (albums) => albums.artist)
-  albums: AlbumsEnity[];
+  @OneToMany(() => AlbumsEntity, (albums) => albums.artist)
+  albums: AlbumsEntity[];
 
-  @OneToMany(() => SongArtistsEnity, (songArtists) => songArtists.artist_id)
-  song_artists: SongArtistsEnity[];
+  @OneToMany(() => SongArtistsEntity, (songArtists) => songArtists.artist_id)
+  song_artists: SongArtistsEntity[];
 }
-export { ArtistsEnity };
+export { ArtistsEntity };

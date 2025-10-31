@@ -7,10 +7,10 @@ import {
 import jwt from 'jsonwebtoken';
 import { ConfigService } from '@nestjs/config';
 import { Request } from 'express';
-import { UserRepository } from '@/model/repository';
+import { AdminRepository } from '@/model/repository';
 import { TokenService } from '@/services/auth';
 
-type AppRole = 'admin' | 'user' | 'mod' | 'guest';
+type AppRole = 'admin' | 'manager' | 'mod' | 'guest';
 
 interface JwtPayload extends jwt.JwtPayload {
   userId: string;
@@ -23,7 +23,7 @@ class JwtAuthGuard implements CanActivate {
   constructor(
     private readonly configService: ConfigService,
     private readonly tokens: TokenService,
-    private readonly users: UserRepository,
+    private readonly admins: AdminRepository,
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
@@ -66,18 +66,18 @@ class JwtAuthGuard implements CanActivate {
     try {
       const decoded = this.tokens.decodedAccessToken(token) as JwtPayload;
 
-      const user = await this.users.findById(decoded.userId);
-      if (!user) {
+      const admin = await this.admins.findById(decoded.userId);
+      if (!admin) {
         throw new UnauthorizedException({
           code: 'USER_NOT_FOUND',
           message: 'User not found',
         });
       }
       req.auth = {
-        id: user.id,
-        email: user.email,
-        roles: user.roles,
-        isSuperAdmin: user.is_super_admin === true,
+        id: admin.id,
+        email: admin.email,
+        roles: admin.roles,
+        isSuperAdmin: admin.is_super_admin === true,
       };
       return true;
     } catch (err) {

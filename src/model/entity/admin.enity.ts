@@ -6,8 +6,8 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 
-@Entity({ name: 'User' })
-class UserEntity {
+@Entity({ name: 'Admin' })
+class AdminEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
@@ -46,11 +46,11 @@ class UserEntity {
 
   @Column({
     type: 'enum',
-    enum: ['admin', 'user', 'mod', 'guest'],
+    enum: ['admin', 'manager', 'mod', 'guest'],
     default: 'admin',
     nullable: true,
   })
-  roles: 'admin' | 'user' | 'mod' | 'guest';
+  roles: 'admin' | 'manager' | 'mod' | 'guest';
 
   @Column({ default: false, nullable: true })
   is_super_admin: boolean;
@@ -62,4 +62,4 @@ class UserEntity {
   updatedAt: Date;
 }
 
-export { UserEntity };
+export { AdminEntity };

@@ -4,13 +4,43 @@ import {
   VerifyEmailDTO,
   ResendOTPDTO,
 } from './auth.dto';
-import { UserDTO } from './user.dto';
+import { AdminDTO } from './admin.dto';
+import {
+  UserDTO,
+  GenresDTO,
+  ArtistsDTO,
+  AlbumsDTO,
+  SongDTO,
+  SongGenresDTO,
+  SongArtistsDTO,
+} from './client';
 
-export { LoginDTO, RegisterDTO, UserDTO, VerifyEmailDTO, ResendOTPDTO };
-export const modelDTO = [
+export {
+  AdminDTO,
   LoginDTO,
   RegisterDTO,
-  UserDTO,
   VerifyEmailDTO,
   ResendOTPDTO,
+  UserDTO,
+  GenresDTO,
+  ArtistsDTO,
+  AlbumsDTO,
+  SongDTO,
+  SongGenresDTO,
+  SongArtistsDTO,
+};
+export const modelDTO = [
+  AdminDTO,
+  LoginDTO,
+  RegisterDTO,
+  VerifyEmailDTO,
+  ResendOTPDTO,
+
+  UserDTO,
+  GenresDTO,
+  ArtistsDTO,
+  AlbumsDTO,
+  SongDTO,
+  SongGenresDTO,
+  SongArtistsDTO,
 ];

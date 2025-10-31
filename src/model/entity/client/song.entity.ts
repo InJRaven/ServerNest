@@ -1,6 +1,6 @@
-import { SongGenresEnity } from './songGenres.enity';
-import { AlbumsEnity } from './albums.enity';
-import { SongArtistsEnity } from './songArtists.enity';
+import { SongGenresEntity } from './songGenres.entity';
+import { AlbumsEntity } from './albums.entity';
+import { SongArtistsEntity } from './songArtists.entity';
 import {
   Entity,
   Column,
@@ -13,7 +13,7 @@ import {
 } from 'typeorm';
 
 @Entity({ name: 'Songs' })
-class SongEnity {
+class SongEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
@@ -47,17 +47,17 @@ class SongEnity {
   @UpdateDateColumn()
   updatedAt: Date;
 
-  @ManyToOne(() => AlbumsEnity, (album) => album.songs, {
+  @ManyToOne(() => AlbumsEntity, (album) => album.songs, {
     nullable: false,
     onDelete: 'CASCADE',
   })
   @JoinColumn({ name: 'album_id' })
-  album: AlbumsEnity;
+  album: AlbumsEntity;
 
-  @OneToMany(() => SongArtistsEnity, (songArtist) => songArtist.artist)
-  song_artists: SongArtistsEnity[];
+  @OneToMany(() => SongArtistsEntity, (songArtist) => songArtist.artist)
+  song_artists: SongArtistsEntity[];
 
-  @OneToMany(() => SongGenresEnity, (songGenre) => songGenre.song)
-  song_genres: SongGenresEnity[];
+  @OneToMany(() => SongGenresEntity, (songGenre) => songGenre.song)
+  song_genres: SongGenresEntity[];
 }
-export { SongEnity };
+export { SongEntity };

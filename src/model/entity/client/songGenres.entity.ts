@@ -1,5 +1,5 @@
-import { GenresEnity } from './genres.enity';
-import { SongEnity } from './song.enity';
+import { GenresEntity } from './genres.entity';
+import { SongEntity } from './song.entity';
 import {
   Entity,
   CreateDateColumn,
@@ -9,7 +9,7 @@ import {
   PrimaryColumn,
 } from 'typeorm';
 @Entity({ name: 'SongGenres' })
-class SongGenresEnity {
+class SongGenresEntity {
   @PrimaryColumn('uuid')
   song_id: string;
 
@@ -22,16 +22,16 @@ class SongGenresEnity {
   @UpdateDateColumn()
   updatedAt: Date;
 
-  @ManyToOne(() => SongEnity, (song) => song.song_genres, {
+  @ManyToOne(() => SongEntity, (song) => song.song_genres, {
     onDelete: 'CASCADE',
   })
   @JoinColumn({ name: 'song_id' })
-  song: SongEnity;
+  song: SongEntity;
 
-  @ManyToOne(() => GenresEnity, (genre) => genre.song_genres, {
+  @ManyToOne(() => GenresEntity, (genre) => genre.song_genres, {
     onDelete: 'CASCADE',
   })
   @JoinColumn({ name: 'genre_id' })
-  genre: GenresEnity;
+  genre: GenresEntity;
 }
-export { SongGenresEnity };
+export { SongGenresEntity };

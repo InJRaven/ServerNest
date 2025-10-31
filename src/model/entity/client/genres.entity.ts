@@ -1,4 +1,4 @@
-import { SongGenresEnity } from './songGenres.enity';
+import { SongGenresEntity } from './songGenres.entity';
 import {
   Entity,
   Column,
@@ -9,7 +9,7 @@ import {
 } from 'typeorm';
 
 @Entity({ name: 'Genres' })
-class GenresEnity {
+class GenresEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
@@ -25,7 +25,7 @@ class GenresEnity {
   @UpdateDateColumn()
   updatedAt: Date;
 
-  @ManyToMany(() => SongGenresEnity, (songGenre) => songGenre.genre)
-  song_genres: SongGenresEnity[];
+  @ManyToMany(() => SongGenresEntity, (songGenre) => songGenre.genre)
+  song_genres: SongGenresEntity[];
 }
-export { GenresEnity };
+export { GenresEntity };
