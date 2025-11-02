@@ -2,8 +2,8 @@ import { Injectable, Logger, OnApplicationBootstrap } from '@nestjs/common';
 import { DataSource } from 'typeorm';
 
 @Injectable()
-export class EntityVerifierService implements OnApplicationBootstrap {
-  private readonly logger = new Logger(EntityVerifierService.name);
+class EntityVerifier implements OnApplicationBootstrap {
+  private readonly logger = new Logger(EntityVerifier.name);
   constructor(private readonly dataSource: DataSource) {}
 
   async onApplicationBootstrap() {
@@ -40,3 +40,4 @@ export class EntityVerifierService implements OnApplicationBootstrap {
     return result.map((row: any) => row.table_name);
   }
 }
+export { EntityVerifier };

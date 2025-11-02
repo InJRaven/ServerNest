@@ -4,7 +4,7 @@ import {
   VerifyEmailDTO,
   ResendOTPDTO,
 } from './auth.dto';
-import { AdminDTO } from './admin.dto';
+import { AdminDTO, AdminLoginDTO, RegisterAdminDTO } from './admin';
 import {
   UserDTO,
   GenresDTO,
@@ -13,10 +13,14 @@ import {
   SongDTO,
   SongGenresDTO,
   SongArtistsDTO,
-} from './client';
+} from './app';
 
 export {
+  //Admin
   AdminDTO,
+  AdminLoginDTO,
+  RegisterAdminDTO,
+  //App
   LoginDTO,
   RegisterDTO,
   VerifyEmailDTO,
@@ -31,6 +35,9 @@ export {
 };
 export const modelDTO = [
   AdminDTO,
+  AdminLoginDTO,
+  RegisterAdminDTO,
+
   LoginDTO,
   RegisterDTO,
   VerifyEmailDTO,

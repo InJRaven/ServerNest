@@ -8,7 +8,7 @@ import {
   SongEntity,
   SongGenresEntity,
   SongArtistsEntity,
-} from './client';
+} from './app';
 
 type EntitiesArg = Parameters<typeof TypeOrmModule.forFeature>[0];
 

@@ -45,8 +45,6 @@ export class AppController {
         occupation: user.occupation,
         company: user.company_name,
         phone: user.phone,
-        role: user.roles,
-        superAdmin: user.is_super_admin,
       });
     } catch (err) {
       // Giữ nguyên các lỗi đã biết, wrap các lỗi còn lại

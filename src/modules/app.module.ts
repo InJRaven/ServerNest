@@ -2,11 +2,12 @@ import { Module } from '@nestjs/common';
 import { AppController } from '@/controllers/app.controller';
 import { Database } from '@/config';
 
-import { modelRepository } from '@/model/repository';
+import { modelRepositoryProvider } from '@/model/repository';
+import { AdminServiceProvider } from '@/services/admin';
 
 import { AppServices } from '@/services/app';
 import { AuthServices } from '@/services/auth';
-import { OtherServices } from '@/services/other';
+import { SharedProvider } from '@/shared';
 import { SessionModule } from '@/modules/session/session.module';
 import { DatabaseModule } from '@/modules/database/database.module';
 import { AuthModule } from '@/modules/auth/auth.module';
@@ -15,10 +16,11 @@ import { AuthModule } from '@/modules/auth/auth.module';
   controllers: [AppController],
   providers: [
     Database,
-    ...modelRepository,
+    ...modelRepositoryProvider,
+    ...AdminServiceProvider,
     ...AppServices,
     ...AuthServices,
-    ...OtherServices,
+    ...SharedProvider,
   ],
 })
 export class AppModule {}
