@@ -2,8 +2,8 @@ import { Module, Global } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { TypeORMConfig } from '@/config';
-import { modelRepository } from '@/model/repository';
-import { UserEntity } from '@/model/entity';
+import { modelRepositoryProvider } from '@/model/repository';
+import { AdminEntity, UserEntity } from '@/model/entity';
 
 @Global()
 @Module({
@@ -14,9 +14,9 @@ import { UserEntity } from '@/model/entity';
       inject: [ConfigService],
       useFactory: TypeORMConfig,
     }),
-    TypeOrmModule.forFeature([UserEntity]),
+    TypeOrmModule.forFeature([UserEntity, AdminEntity]),
   ],
-  providers: [...modelRepository],
-  exports: [TypeOrmModule, ...modelRepository],
+  providers: [...modelRepositoryProvider],
+  exports: [TypeOrmModule, ...modelRepositoryProvider],
 })
 export class DatabaseModule {}

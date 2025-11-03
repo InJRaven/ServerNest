@@ -2,6 +2,7 @@ import {
   Injectable,
   UnauthorizedException,
   BadRequestException,
+  OnModuleInit,
 } from '@nestjs/common';
 import { Request } from 'express';
 import bcrypt from 'bcrypt';
@@ -11,11 +12,30 @@ import { AdminLoginDTO, RegisterAdminDTO } from '@/model/dto';
 import { AdminRepository } from '@/model/repository';
 import { TokenService } from '@/shared';
 @Injectable()
-class AdminAuthService {
+class AdminAuthService implements OnModuleInit {
   constructor(
     private readonly repository: AdminRepository,
     private readonly tokens: TokenService,
   ) {}
+
+  async onModuleInit() {
+    const email = 'kuuhaku989898@gmail.com';
+    const exists = await this.repository.findByEmail(email);
+    if (!exists) {
+      const hashed = await bcrypt.hash('123456', 10);
+      await this.repository.createAdmin({
+        username: 'admin',
+        email,
+        password: hashed,
+        email_verified: true,
+        roles: 'admin',
+        is_super_admin: true,
+      });
+      console.log('✅ Default admin created');
+    } else {
+      console.log('ℹ️ Admin already exists');
+    }
+  }
 
   async login(
     body: AdminLoginDTO,

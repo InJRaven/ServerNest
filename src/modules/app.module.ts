@@ -11,8 +11,9 @@ import { SharedProvider } from '@/shared';
 import { SessionModule } from '@/modules/session/session.module';
 import { DatabaseModule } from '@/modules/database/database.module';
 import { AuthModule } from '@/modules/auth/auth.module';
+import { AdminModule } from './admin/admin.module';
 @Module({
-  imports: [DatabaseModule, SessionModule, AuthModule],
+  imports: [DatabaseModule, SessionModule, AuthModule, AdminModule],
   controllers: [AppController],
   providers: [
     Database,

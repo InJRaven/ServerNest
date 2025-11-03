@@ -10,13 +10,13 @@ import {
   UnauthorizedException,
   UseGuards,
 } from '@nestjs/common';
-import { UserRepository } from '@/model/repository';
+import { AdminRepository } from '@/model/repository';
 
 @Controller()
 export class AppController {
   constructor(
     private readonly appService: AppService,
-    private readonly users: UserRepository,
+    private readonly admins: AdminRepository,
   ) {}
 
   @Get()
@@ -28,23 +28,24 @@ export class AppController {
     }
 
     try {
-      const user = await this.users.findById(auth.id);
-      if (!user) {
+      const admin = await this.admins.findById(auth.id);
+      if (!admin) {
         throw new NotFoundException({
-          code: 'USER_NOT_FOUND',
-          message: 'User not found',
+          code: 'ADMIN_NOT_FOUND',
+          message: 'Admin not found',
         });
       }
 
       return this.appService.getHello({
-        id: user.id,
-        username: user.username,
-        email: user.email,
-        firstName: user.first_name,
-        lastName: user.last_name,
-        occupation: user.occupation,
-        company: user.company_name,
-        phone: user.phone,
+        id: admin.id,
+        username: admin.username,
+        email: admin.email,
+        firstName: admin.first_name,
+        lastName: admin.last_name,
+        occupation: admin.occupation,
+        company: admin.company_name,
+        phone: admin.phone,
+        superAdmin: admin.is_super_admin,
       });
     } catch (err) {
       // Giữ nguyên các lỗi đã biết, wrap các lỗi còn lại
