@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import jwt from 'jsonwebtoken';
 import { randomBytes, randomInt } from 'crypto';
-import { RedisConfig } from '@/config';
+import { RedisConfig } from '@config';
 
 @Injectable()
 class TokenService {

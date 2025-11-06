@@ -3,22 +3,22 @@ import cookieParser from 'cookie-parser';
 import cors from 'cors';
 import express from 'express';
 
-import { AppModule } from '@/modules/app.module';
-import { Session, Database } from '@/config';
+import { Session, Database } from '@config';
+import { ServerModule } from '@modules/server/server.module';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const server = await NestFactory.create(ServerModule);
 
-  app.use(cors({ origin: true, credentials: true }));
-  app.use(express.json()); // body-parser
-  app.use(express.urlencoded({ extended: false }));
-  app.use(cookieParser());
+  server.use(cors({ origin: true, credentials: true }));
+  server.use(express.json()); // body-parser
+  server.use(express.urlencoded({ extended: false }));
+  server.use(cookieParser());
 
   // Session Init
-  app.use(app.get(Session).getSessionMiddleware());
+  server.use(server.get(Session).getSessionMiddleware());
   // Check Database
-  await app.get(Database).checkConnection();
+  await server.get(Database).checkConnection();
 
-  await app.listen(process.env.PORT ?? 3000);
+  await server.listen(process.env.PORT ?? 3000);
 }
 void bootstrap();

@@ -11,7 +11,15 @@
     "sourceMap": true,
     "outDir": "./dist",
     "paths": {
-      "@/*": ["./src/*"]
+      "@": ["./src"],
+      "@config": ["./src/config"],
+      "@decorators": ["./src/common/decorators"],
+      "@guards": ["./src/common/guards"],
+      "@shared": ["./src/shared"],
+      "@modules/*": ["./src/modules/*"],
+      "@DTO": ["./src/database/DTO"],
+      "@entities": ["./src/database/entities"],
+      "@repositories": ["./src/database/repositories"]
     },
     "incremental": true,
     "skipLibCheck": true,

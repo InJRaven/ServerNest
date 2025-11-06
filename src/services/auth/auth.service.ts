@@ -5,17 +5,12 @@ import {
 } from '@nestjs/common';
 import { Request } from 'express';
 import bcrypt from 'bcrypt';
-import {
-  LoginDTO,
-  RegisterDTO,
-  ResendOTPDTO,
-  VerifyEmailDTO,
-} from '@/model/dto';
+import { LoginDTO, RegisterDTO, ResendOTPDTO, VerifyEmailDTO } from '@DTO';
 
 import { TokenService } from './token.service';
 import jwt, { JwtPayload } from 'jsonwebtoken';
 import { EmailService } from './email.service';
-import { AdminRepository } from '@/model/repository';
+import { AdminRepository } from '@repositories';
 
 @Injectable()
 class AuthService {

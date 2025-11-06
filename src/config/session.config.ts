@@ -2,7 +2,7 @@ import session from 'express-session';
 import connectRedis from 'connect-redis';
 import { ConfigService } from '@nestjs/config';
 import { Injectable } from '@nestjs/common';
-import { RedisConfig } from '@/config/redis.config';
+import { RedisConfig } from './redis.config';
 
 @Injectable()
 class Session {
