@@ -11,6 +11,7 @@ const TypeORMConfig = (configService: ConfigService): TypeOrmModuleOptions => {
     password: configService.get('DB_PASSWORD'),
     database: configService.get('DB_DATABASE'),
     entities: [...GlobalEntities, ...AdminEntitires],
+    schema: configService.get('DB_SCHEMA'),
     synchronize: true,
   };
 };

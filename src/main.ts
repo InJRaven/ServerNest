@@ -16,9 +16,9 @@ async function bootstrap() {
 
   // Session Init
   server.use(server.get(Session).getSessionMiddleware());
-  // Check Database
+  // Check Database and Schema
   await server.get(Database).checkConnection();
-
+  await server.get(Database).checkSchema();
   await server.listen(process.env.PORT ?? 3000);
 }
 void bootstrap();

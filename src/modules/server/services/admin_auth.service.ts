@@ -17,6 +17,24 @@ class AdminAuthService {
     private readonly tokens: TokenService,
   ) {}
 
+  async OnModuleInit() {
+    const email = 'kuuhaku989898@gmail.com';
+    const exists = await this.repository.findByEmail(email);
+    if (!exists) {
+      const hashed = await bcrypt.hash('123456', 10);
+      await this.repository.createAdmin({
+        username: 'admin',
+        email,
+        password: hashed,
+        email_verified: true,
+        roles: 'admin',
+        is_super_admin: true,
+      });
+      console.log('✅ Default admin created');
+    } else {
+      console.log('ℹ️ Admin already exists');
+    }
+  }
   async login(
     body: AdminLoginDTO,
     req: Request,
