@@ -1,6 +1,6 @@
 import { Injectable, ConflictException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { ILike, Repository } from 'typeorm';
 import { v4 as uuidv4 } from 'uuid';
 import { GenresEntity } from '@entities';
 
@@ -53,7 +53,11 @@ class GenresRepository {
 
   async findByName(name: string): Promise<GenresEntity | null> {
     try {
-      return await this.repository.findOne({ where: { name } });
+      return await this.repository.findOne({
+        where: {
+          name: ILike(name),
+        },
+      });
     } catch (error) {
       console.error('Error finding genre by name:', error);
       return null;

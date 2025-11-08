@@ -2,7 +2,7 @@ import { IsOptional, IsString } from 'class-validator';
 
 class GenresDTO {
   @IsString()
-  username: string;
+  name: string;
 
   @IsOptional()
   @IsString()

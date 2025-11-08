@@ -80,7 +80,7 @@ class AdminAuthService {
 
     const exitingAdminName = await this.repository.findByName(username);
     if (exitingAdminName) {
-      throw new BadRequestException('User Name đã được sử dụng');
+      throw new BadRequestException('Username is already in use');
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
