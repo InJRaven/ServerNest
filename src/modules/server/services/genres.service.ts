@@ -8,24 +8,29 @@ import { GenresRepository } from '@repositories';
 import { GenresDTO } from '@DTO';
 import { GenresMapper } from '@modules/server/mapper';
 
-interface CreateGenresResult {
-  success: number;
-  failed: number;
-  createdGenres: string[];
-  failedGenres: Array<{
-    name: string;
-    reason: string;
-  }>;
-}
 @Injectable()
 class GenresService {
   constructor(private readonly repository: GenresRepository) {}
 
-  async createGenre(
-    body: GenresDTO,
-  ): Promise<{ message: string; result: CreateGenresResult }> {
+  async createGenre(body: GenresDTO): Promise<{
+    message: string;
+    result: {
+      success: number;
+      failed: number;
+      createdGenres: string[];
+      failedGenres: Array<{
+        name: string;
+        reason: string;
+      }>;
+    };
+  }> {
     const { name, ...rest } = body;
-    const result: CreateGenresResult = {
+    const result: {
+      success: number;
+      failed: number;
+      createdGenres: string[];
+      failedGenres: Array<{ name: string; reason: string }>;
+    } = {
       success: 0,
       failed: 0,
       createdGenres: [],
@@ -106,7 +111,6 @@ class GenresService {
 
   async getAllGenres() {
     const genres = await this.repository.findAll();
-
     return GenresMapper.mapEntitiesToResponseDTO(genres);
   }
 }

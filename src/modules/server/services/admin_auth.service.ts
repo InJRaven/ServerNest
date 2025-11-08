@@ -17,7 +17,7 @@ class AdminAuthService {
     private readonly tokens: TokenService,
   ) {}
 
-  async OnModuleInit() {
+  async onModuleInit() {
     const email = 'kuuhaku989898@gmail.com';
     const exists = await this.repository.findByEmail(email);
     if (!exists) {
