@@ -78,18 +78,33 @@ class GenresService {
     };
   }
 
-  async updateGenre(id: string, body: GenresDTO): Promise<{ message: string }> {
-    const existingGenre = await this.repository.findById(id);
-    if (!existingGenre) {
-      throw new NotFoundException(`Genre with ID '${id}' not found`);
-    }
+  async updateGenre(
+    updates: Array<{ id: string; data: GenresDTO }>,
+  ): Promise<{ message: string; result: object }> {
+    const updatePromises = updates.map(async ({ id, data }) => {
+      try {
+        const existingGenre = await this.repository.findById(id);
+        if (!existingGenre) {
+          throw new NotFoundException(`Genre with ID '${id}' not found`);
+        }
 
-    const updated = await this.repository.updateGenre(id, body);
-    if (!updated) {
-      throw new NotFoundException(`Genre with ID '${id}' not found`);
-    }
+        const updated = await this.repository.updateGenre(id, data);
 
-    return { message: `Genre has been updated successfully` };
+        if (!updated) {
+          throw new NotFoundException(`Genre with ID '${id}' not found`);
+        }
+        return { id, success: true };
+      } catch (error) {
+        return { id, success: false, error: error.message };
+      }
+    });
+    const details = await Promise.all(updatePromises);
+    const successCount = details.filter((d) => d.success).length;
+    const failedCount = details.length - successCount;
+    return {
+      message: `Updated ${successCount}/${details.length} genres successfully`,
+      result: { updated: successCount, failed: failedCount, details },
+    };
   }
 
   async deleteGenre(id: string): Promise<{ message: string }> {

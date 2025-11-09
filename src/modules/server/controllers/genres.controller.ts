@@ -28,10 +28,10 @@ export class GenresController {
     return await this.services.createGenre(body);
   }
 
-  @Put(':id')
+  @Put()
   @HttpCode(HttpStatus.OK)
-  async updateGenre(@Param('id') id: string, @Body() body: GenresDTO) {
-    return await this.services.updateGenre(id, body);
+  async updateGenre(@Body() body: Array<{ id: string; data: GenresDTO }>) {
+    return await this.services.updateGenre(body);
   }
 
   @Delete(':id')
