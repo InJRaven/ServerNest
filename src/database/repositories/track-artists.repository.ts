@@ -5,18 +5,18 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { SongArtistsEntity } from '@entities';
+import { TrackArtistsEntity } from '@entities';
 
 @Injectable()
-class SongArtistsRepository {
+class TrackArtistsRepository {
   constructor(
-    @InjectRepository(SongArtistsEntity)
-    private readonly repository: Repository<SongArtistsEntity>,
+    @InjectRepository(TrackArtistsEntity)
+    private readonly repository: Repository<TrackArtistsEntity>,
   ) {}
 
   async createSongArtist(
-    data: Partial<SongArtistsEntity>,
-  ): Promise<SongArtistsEntity> {
+    data: Partial<TrackArtistsEntity>,
+  ): Promise<TrackArtistsEntity> {
     try {
       const songArtist = this.repository.create(data);
       return await this.repository.save(songArtist);
@@ -31,15 +31,15 @@ class SongArtistsRepository {
     }
   }
 
-  async findBySongId(songId: string): Promise<SongArtistsEntity[]> {
+  async findByTrackId(trackId: string): Promise<TrackArtistsEntity[]> {
     return await this.repository.find({
-      where: { song_id: songId },
+      where: { track_id: trackId },
       relations: ['artist'],
       order: { role: 'ASC' },
     });
   }
 
-  async findByArtistId(artistId: string): Promise<SongArtistsEntity[]> {
+  async findByArtistId(artistId: string): Promise<TrackArtistsEntity[]> {
     return await this.repository.find({
       where: { artist_id: artistId },
       relations: ['song', 'song.album'],
@@ -47,38 +47,41 @@ class SongArtistsRepository {
     });
   }
 
-  async findByRole(songId: string, role: string): Promise<SongArtistsEntity[]> {
+  async findByRole(
+    trackId: string,
+    role: string,
+  ): Promise<TrackArtistsEntity[]> {
     return await this.repository.find({
-      where: { song_id: songId, role: role as any },
+      where: { track_id: trackId, role: role as any },
       relations: ['artist'],
     });
   }
 
-  async deleteSongArtist(songId: string, artistId: string): Promise<boolean> {
+  async deleteSongArtist(trackId: string, artistId: string): Promise<boolean> {
     const result = await this.repository.delete({
-      song_id: songId,
+      track_id: trackId,
       artist_id: artistId,
     });
     return (result.affected ?? 0) > 0;
   }
 
   async deleteAllBySongId(songId: string): Promise<void> {
-    await this.repository.delete({ song_id: songId });
+    await this.repository.delete({ track_id: songId });
   }
 
   async updateRole(
     songId: string,
     artistId: string,
     role: string,
-  ): Promise<SongArtistsEntity | null> {
+  ): Promise<TrackArtistsEntity | null> {
     await this.repository.update(
-      { song_id: songId, artist_id: artistId },
+      { track_id: songId, artist_id: artistId },
       { role: role as any },
     );
     return await this.repository.findOne({
-      where: { song_id: songId, artist_id: artistId },
+      where: { track_id: songId, artist_id: artistId },
     });
   }
 }
 
-export { SongArtistsRepository };
+export { TrackArtistsRepository };

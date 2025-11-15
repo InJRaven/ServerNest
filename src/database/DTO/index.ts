@@ -12,16 +12,14 @@ import { UserDTO } from './user.dto';
 import { GenresDTO } from './genres.dto';
 import { ArtistsDTO } from './artists.dto';
 import { AlbumsDTO } from './albums.dto';
-import { SongDTO } from './song.dto';
-import { SongGenresDTO } from './songGenres.dto';
-import { SongArtistsDTO } from './songArtists.dto';
-
+import { TrackDTO } from './track.dto';
+import { TrackGenresDTO } from './track-genres.dto';
+import { TrackArtistsDTO } from './track-artists.dto';
+import { AlbumGenresDto } from './album-genres.dto';
 export {
-  //Admin
   AdminDTO,
   AdminLoginDTO,
   RegisterAdminDTO,
-  //App
   LoginDTO,
   RegisterDTO,
   VerifyEmailDTO,
@@ -30,9 +28,10 @@ export {
   GenresDTO,
   ArtistsDTO,
   AlbumsDTO,
-  SongDTO,
-  SongGenresDTO,
-  SongArtistsDTO,
+  TrackDTO,
+  TrackGenresDTO,
+  TrackArtistsDTO,
+  AlbumGenresDto,
 };
 
 export const GlobalDTOs = [
@@ -40,14 +39,14 @@ export const GlobalDTOs = [
   RegisterDTO,
   VerifyEmailDTO,
   ResendOTPDTO,
-
   UserDTO,
   GenresDTO,
   ArtistsDTO,
   AlbumsDTO,
-  SongDTO,
-  SongGenresDTO,
-  SongArtistsDTO,
+  TrackDTO,
+  TrackGenresDTO,
+  TrackArtistsDTO,
+  AlbumGenresDto,
 ];
 
 export const ServerDTO = [AdminDTO, AdminLoginDTO, RegisterAdminDTO];

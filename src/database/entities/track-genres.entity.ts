@@ -1,5 +1,5 @@
 import { GenresEntity } from './genres.entity';
-import { SongEntity } from './song.entity';
+import { TracksEntity } from './tracks.entity';
 import {
   Entity,
   CreateDateColumn,
@@ -8,10 +8,10 @@ import {
   ManyToOne,
   PrimaryColumn,
 } from 'typeorm';
-@Entity({ name: 'SongGenres' })
-class SongGenresEntity {
+@Entity({ name: 'TrackGenres' })
+class TrackGenresEntity {
   @PrimaryColumn('uuid')
-  song_id: string;
+  track_id: string;
 
   @PrimaryColumn('uuid')
   genre_id: string;
@@ -22,16 +22,16 @@ class SongGenresEntity {
   @UpdateDateColumn()
   updatedAt: Date;
 
-  @ManyToOne(() => SongEntity, (song) => song.song_genres, {
+  @ManyToOne(() => TracksEntity, (track) => track.track_genres, {
     onDelete: 'CASCADE',
   })
-  @JoinColumn({ name: 'song_id' })
-  song: SongEntity;
+  @JoinColumn({ name: 'track_id' })
+  track: TracksEntity;
 
-  @ManyToOne(() => GenresEntity, (genre) => genre.song_genres, {
+  @ManyToOne(() => GenresEntity, (genre) => genre.track_genres, {
     onDelete: 'CASCADE',
   })
   @JoinColumn({ name: 'genre_id' })
   genre: GenresEntity;
 }
-export { SongGenresEntity };
+export { TrackGenresEntity };

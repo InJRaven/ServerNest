@@ -15,6 +15,10 @@
       "@config": ["./src/config"],
       "@decorators": ["./src/common/decorators"],
       "@guards": ["./src/common/guards"],
+      "@exceptions": ["./src/common/exceptions"],
+      "@utils": ["./src/common/utils"],
+      "@interfaces": ["./src/common/interfaces"],
+
       "@shared": ["./src/shared"],
       "@modules/*": ["./src/modules/*"],
       "@DTO": ["./src/database/DTO"],

@@ -3,14 +3,16 @@ import {
   BadRequestException,
   NotFoundException,
 } from '@nestjs/common';
-import { Request } from 'express';
 import { GenresRepository } from '@repositories';
 import { GenresDTO } from '@DTO';
-import { GenresMapper } from '@modules/server/mapper';
+import { GenreMapper } from '@modules/server/mapper';
 
 @Injectable()
 class GenresService {
-  constructor(private readonly repository: GenresRepository) {}
+  constructor(
+    private readonly repository: GenresRepository,
+    private readonly mapper: GenreMapper,
+  ) {}
 
   async createGenre(body: GenresDTO): Promise<{
     message: string;
@@ -126,7 +128,7 @@ class GenresService {
 
   async getAllGenres() {
     const genres = await this.repository.findAll();
-    return GenresMapper.mapEntitiesToResponseDTO(genres);
+    return this.mapper.toListResponseDtoList(genres);
   }
 }
 

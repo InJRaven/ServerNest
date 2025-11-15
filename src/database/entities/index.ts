@@ -1,21 +1,22 @@
-import { AdminEntity } from './admin.enity';
+import { AdminEntity } from './admin.entity';
 import { UserEntity } from './user.entity';
 import { GenresEntity } from './genres.entity';
 import { ArtistsEntity } from './artists.entity';
 import { AlbumsEntity } from './albums.entity';
-import { SongEntity } from './song.entity';
-import { SongGenresEntity } from './songGenres.entity';
-import { SongArtistsEntity } from './songArtists.entity';
-
+import { TracksEntity } from './tracks.entity';
+import { TrackGenresEntity } from './track-genres.entity';
+import { TrackArtistsEntity } from './track-artists.entity';
+import { AlbumGenresEntity } from './album-genres.entity';
 export {
   AdminEntity,
   UserEntity,
   GenresEntity,
   ArtistsEntity,
   AlbumsEntity,
-  SongEntity,
-  SongGenresEntity,
-  SongArtistsEntity,
+  TracksEntity,
+  TrackGenresEntity,
+  TrackArtistsEntity,
+  AlbumGenresEntity,
 };
 export const AdminEntitires = [AdminEntity];
 export const GlobalEntities = [
@@ -23,7 +24,8 @@ export const GlobalEntities = [
   GenresEntity,
   ArtistsEntity,
   AlbumsEntity,
-  SongEntity,
-  SongGenresEntity,
-  SongArtistsEntity,
+  TracksEntity,
+  TrackGenresEntity,
+  TrackArtistsEntity,
+  AlbumGenresEntity,
 ];

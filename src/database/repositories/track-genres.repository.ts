@@ -5,18 +5,18 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { SongGenresEntity } from '@entities';
+import { TrackGenresEntity } from '@entities';
 
 @Injectable()
-class SongGenresRepository {
+class TrackGenresRepository {
   constructor(
-    @InjectRepository(SongGenresEntity)
-    private readonly repository: Repository<SongGenresEntity>,
+    @InjectRepository(TrackGenresEntity)
+    private readonly repository: Repository<TrackGenresEntity>,
   ) {}
 
   async createSongGenre(
-    data: Partial<SongGenresEntity>,
-  ): Promise<SongGenresEntity> {
+    data: Partial<TrackGenresEntity>,
+  ): Promise<TrackGenresEntity> {
     try {
       const songGenre = this.repository.create(data);
       return await this.repository.save(songGenre);
@@ -31,41 +31,41 @@ class SongGenresRepository {
     }
   }
 
-  async findBySongId(songId: string): Promise<SongGenresEntity[]> {
+  async findByTrackId(trackId: string): Promise<TrackGenresEntity[]> {
     return await this.repository.find({
-      where: { song_id: songId },
+      where: { track_id: trackId },
       relations: ['genre'],
     });
   }
 
-  async findByGenreId(genreId: string): Promise<SongGenresEntity[]> {
+  async findByGenreId(genreId: string): Promise<TrackGenresEntity[]> {
     return await this.repository.find({
       where: { genre_id: genreId },
       relations: ['song', 'song.album', 'song.album.artist'],
     });
   }
 
-  async deleteSongGenre(songId: string, genreId: string): Promise<boolean> {
+  async deleteSongGenre(trackId: string, genreId: string): Promise<boolean> {
     const result = await this.repository.delete({
-      song_id: songId,
+      track_id: trackId,
       genre_id: genreId,
     });
     return (result.affected ?? 0) > 0;
   }
 
-  async deleteAllBySongId(songId: string): Promise<void> {
-    await this.repository.delete({ song_id: songId });
+  async deleteAllBytrackId(trackId: string): Promise<void> {
+    await this.repository.delete({ track_id: trackId });
   }
 
-  async replaceSongGenres(songId: string, genreIds: string[]): Promise<void> {
+  async replaceSongGenres(trackId: string, genreIds: string[]): Promise<void> {
     // Xóa tất cả genres cũ
-    await this.deleteAllBySongId(songId);
+    await this.deleteAllBytrackId(trackId);
 
     // Thêm genres mới
     for (const genreId of genreIds) {
-      await this.createSongGenre({ song_id: songId, genre_id: genreId });
+      await this.createSongGenre({ track_id: trackId, genre_id: genreId });
     }
   }
 }
 
-export { SongGenresRepository };
+export { TrackGenresRepository };

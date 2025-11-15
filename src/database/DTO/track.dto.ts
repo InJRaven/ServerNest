@@ -1,16 +1,21 @@
 import {
   IsString,
   IsOptional,
-  IsUrl,
+  IsBoolean,
+  IsNumber,
   IsObject,
   IsEnum,
-  IsArray,
-  IsBoolean,
+  IsUrl,
+  Min,
   IsNotEmpty,
   IsDateString,
 } from 'class-validator';
 
-class ArtistsDTO {
+class TrackDTO {
+  @IsString()
+  @IsNotEmpty()
+  album_id: string;
+
   @IsString()
   @IsNotEmpty()
   title: string;
@@ -23,56 +28,54 @@ class ArtistsDTO {
   @IsString()
   summary?: string;
 
-  @IsOptional()
+  @IsNumber()
+  @Min(0)
+  duration: number; // in seconds
+
+  @IsNumber()
+  @Min(1)
+  track_no: number;
+
   @IsUrl()
-  avatar_url?: string;
+  file_url: string;
 
   @IsOptional()
   @IsUrl()
-  header_image_url?: string;
+  cover_url?: string;
 
   @IsOptional()
-  @IsArray()
-  images?: Array<{
-    url: string;
-    height: number;
-    width: number;
-  }>;
+  @IsString()
+  lyrics: string;
 
   @IsOptional()
   @IsBoolean()
-  verified?: boolean;
+  is_explicit?: boolean;
 
   @IsOptional()
-  @IsArray()
-  @IsString({ each: true })
-  genres?: string[];
+  @IsNumber()
+  @Min(0)
+  bpm?: number;
+
+  @IsOptional()
+  @IsDateString()
+  release_date?: string;
 
   @IsOptional()
   @IsObject()
   external_urls?: {
-    instagram?: string;
-    facebook?: string;
-    twitter?: string;
     youtube?: string;
+    soundcloud?: string;
+    apple_music?: string;
     tiktok?: string;
-    website?: string;
   };
 
   @IsOptional()
-  @IsString()
-  country?: string;
-
-  @IsOptional()
-  @IsDateString()
-  debut_date?: string;
-
-  @IsOptional()
-  @IsEnum(['active', 'inactive'])
+  @IsEnum(['public', 'private', 'unlisted'])
   status?: string;
 
   @IsOptional()
   @IsBoolean()
   is_deleted?: boolean;
 }
-export { ArtistsDTO };
+
+export { TrackDTO };

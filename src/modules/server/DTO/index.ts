@@ -1,3 +1,18 @@
-import { GenresResDTO } from '@modules/server/DTO/genres.res.dto';
+import { GenreResponseDTO, GenreListResponseDTO } from './genre-response.dto';
+import {
+  ArtistResponseDTO,
+  ArtistListResponseDTO,
+} from './artist-response.dto';
+import { TrackResponseDTO, TrackListResponseDTO } from './track-response.dto';
+import { AlbumResponseDTO, AlbumListResponseDTO } from './album-response.dto';
 
-export { GenresResDTO };
+export {
+  ArtistResponseDTO,
+  ArtistListResponseDTO,
+  GenreResponseDTO,
+  GenreListResponseDTO,
+  TrackResponseDTO,
+  TrackListResponseDTO,
+  AlbumResponseDTO,
+  AlbumListResponseDTO,
+};

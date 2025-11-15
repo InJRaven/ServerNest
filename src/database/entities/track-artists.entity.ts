@@ -1,21 +1,21 @@
 import { ArtistsEntity } from './artists.entity';
-import { SongEntity } from './song.entity';
+import { TracksEntity } from './tracks.entity';
 import {
   Entity,
   Column,
-  PrimaryGeneratedColumn,
   CreateDateColumn,
   UpdateDateColumn,
   ManyToOne,
   JoinColumn,
+  PrimaryColumn,
 } from 'typeorm';
 
-@Entity({ name: 'SongArtists' })
-class SongArtistsEntity {
-  @PrimaryGeneratedColumn('uuid')
-  song_id: string;
+@Entity({ name: 'TrackArtists' })
+class TrackArtistsEntity {
+  @PrimaryColumn('uuid')
+  track_id: string;
 
-  @PrimaryGeneratedColumn('uuid')
+  @PrimaryColumn('uuid')
   artist_id: string;
 
   @Column({
@@ -32,17 +32,17 @@ class SongArtistsEntity {
   @UpdateDateColumn()
   updatedAt: Date;
 
-  @ManyToOne(() => SongEntity, (song) => song.song_artists, {
+  @ManyToOne(() => TracksEntity, (track) => track.track_artists, {
     onDelete: 'CASCADE',
   })
-  @JoinColumn({ name: 'song_id' })
-  song: SongEntity;
+  @JoinColumn({ name: 'track_id' })
+  track: TracksEntity;
 
-  @ManyToOne(() => ArtistsEntity, (artist) => artist.song_artists, {
+  @ManyToOne(() => ArtistsEntity, (artist) => artist.track_artists, {
     onDelete: 'CASCADE',
   })
   @JoinColumn({ name: 'artist_id' })
   artist: ArtistsEntity;
 }
 
-export { SongArtistsEntity };
+export { TrackArtistsEntity };

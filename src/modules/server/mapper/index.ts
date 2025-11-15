@@ -1,3 +1,6 @@
-import { GenresMapper } from '@modules/server/mapper/genres.mapper';
+import { GenreMapper } from './genre.mapper';
+import { ArtistMapper } from './artist.mapper';
+import { TrackMapper } from './track.mapper';
+export { GenreMapper, ArtistMapper, TrackMapper };
 
-export { GenresMapper };
+export const Mapper = [GenreMapper, ArtistMapper, TrackMapper];
