@@ -22,9 +22,10 @@ interface IBaseRepository<Entity> {
   restore(id: string): Promise<boolean>;
 
   /* ---------------------------------------------------------
-   * FIND
+   * FIND OPERATIONS
    * --------------------------------------------------------- */
   findById(id: string): Promise<Entity | null>;
+  findBySlug(slug: string): Promise<Entity | null>;
   findOne(where: FindOptionsWhere<Entity>): Promise<Entity | null>;
   findAll(options?: FindManyOptions<Entity>): Promise<Entity[]>;
   findByIds(ids: string[]): Promise<Entity[]>;
@@ -33,12 +34,46 @@ interface IBaseRepository<Entity> {
   findOneWithDeleted(where: FindOptionsWhere<Entity>): Promise<Entity | null>;
   findAllWithDeleted(options?: FindManyOptions<Entity>): Promise<Entity[]>;
   findByIdsWithDeleted(ids: string[]): Promise<Entity[]>;
+  findBySlugWithDeleted(slug: string): Promise<Entity | null>;
 
   count(where?: FindOptionsWhere<Entity>): Promise<number>;
   /* ---------------------------------------------------------
    * EXISTENCE CHECK
    * --------------------------------------------------------- */
   exists(where: FindOptionsWhere<Entity>): Promise<boolean>;
+
+  /* ---------------------------------------------------------
+   * UTILITY OPERATIONS
+   * --------------------------------------------------------- */
+  increment(id: string, field: keyof Entity, value?: number): Promise<void>;
+  decrement(id: string, field: keyof Entity, value?: number): Promise<void>;
+  updateField(id: string, field: keyof Entity, value: any): Promise<void>;
+
+  /* ---------------------------------------------------------
+   * QUERY OPERATIONS
+   * --------------------------------------------------------- */
+  findByField(field: keyof Entity, value: any): Promise<Entity | null>;
+  findAllByField(
+    field: keyof Entity,
+    value: any,
+    options?: FindManyOptions<Entity>,
+  ): Promise<Entity[]>;
+  findRecent(limit?: number, sortField?: keyof Entity): Promise<Entity[]>;
+  findPopular(
+    limit?: number,
+    popularityField?: keyof Entity,
+  ): Promise<Entity[]>;
+}
+
+interface ISearchOptions<Entity> {
+  where?: FindOptionsWhere<Entity> | FindOptionsWhere<Entity>[];
+  search?: string;
+  searchFields?: (keyof Entity)[];
+  page?: number;
+  limit?: number;
+  sortBy?: keyof Entity;
+  sortOrder?: 'ASC' | 'DESC';
+  relations?: string[];
 }
 
 interface IPagination<T> {
@@ -52,4 +87,4 @@ interface IPagination<T> {
     hasPreviousPage: boolean;
   };
 }
-export { IBaseRepository, IPagination };
+export { IBaseRepository, ISearchOptions, IPagination };

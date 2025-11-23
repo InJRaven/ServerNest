@@ -1,80 +1,73 @@
-import { Injectable, ConflictException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { ILike, Repository } from 'typeorm';
-import { v4 as uuidv4 } from 'uuid';
+import { FindOptionsWhere, Repository } from 'typeorm';
 import { GenresEntity } from '@entities';
-
+import { BaseRepository } from './base.repository';
+interface IGenreRepository {
+  findBySlug(slug: string): Promise<GenresEntity | null>;
+  findByTitle(name: string): Promise<GenresEntity | null>;
+  // searchGenres(
+  //   options: IGenreSearchOptions,
+  // ): Promise<IPaginatedResult<GenresEntity>>;
+  getTopGenres(limit: number): Promise<GenresEntity[]>;
+  getActiveGenres(): Promise<GenresEntity[]>;
+  incrementTrackCount(id: string, count: number): Promise<void>;
+  incrementAlbumCount(id: string, count: number): Promise<void>;
+  updatePopularity(id: string, popularity: number): Promise<void>;
+}
 @Injectable()
-class GenresRepository {
+class GenresRepository
+  extends BaseRepository<GenresEntity>
+  implements IGenreRepository
+{
   constructor(
     @InjectRepository(GenresEntity)
-    private readonly repository: Repository<GenresEntity>,
-  ) {}
-
-  async createGenre(data: Partial<GenresEntity>): Promise<GenresEntity> {
-    try {
-      const genre = this.repository.create({ id: uuidv4(), ...data });
-      return await this.repository.save(genre);
-    } catch (error) {
-      if (error.code === '23505' || error.code === 'ER_DUP_ENTRY') {
-        throw new ConflictException(`Genre already exists`);
-      }
-      throw error;
-    }
+    repository: Repository<GenresEntity>,
+  ) {
+    super(repository);
+  }
+  async findBySlug(slug: string): Promise<GenresEntity | null> {
+    return await this.findOne({
+      slug,
+    } as any as FindOptionsWhere<GenresEntity>);
   }
 
-  async updateGenre(
-    id: string,
-    data: Partial<GenresEntity>,
-  ): Promise<GenresEntity | null> {
-    try {
-      const result = await this.repository.update(id, data);
-      if (result.affected === 0) {
-        return null;
-      }
-
-      return await this.repository.findOne({ where: { id } });
-    } catch (error) {
-      if (error.code === '23505' || error.code === 'ER_DUP_ENTRY') {
-        throw new ConflictException(`Genre already exists`);
-      }
-      throw error;
-    }
+  async findByTitle(title: string): Promise<GenresEntity | null> {
+    return await this.findOne({
+      title,
+    } as any as FindOptionsWhere<GenresEntity>);
   }
 
-  async findById(id: string): Promise<GenresEntity | null> {
-    try {
-      return await this.repository.findOne({ where: { id } });
-    } catch (error) {
-      console.error('Error finding genre by id:', error);
-      return null;
-    }
-  }
-
-  async findByName(name: string): Promise<GenresEntity | null> {
-    try {
-      return await this.repository.findOne({
-        where: {
-          name: ILike(name),
-        },
-      });
-    } catch (error) {
-      console.error('Error finding genre by name:', error);
-      return null;
-    }
-  }
-  async findAll(): Promise<GenresEntity[]> {
+  async getTopGenres(limit: number = 10): Promise<GenresEntity[]> {
     return await this.repository.find({
-      order: { name: 'ASC' },
+      where: {
+        is_deleted: false,
+        is_active: true,
+      } as any as FindOptionsWhere<GenresEntity>,
+      order: { popularity: 'DESC', track_count: 'DESC' },
+      take: limit,
     });
   }
-  async deleteGenre(id: string): Promise<boolean> {
-    const result = await this.repository.delete(id);
-    return (result.affected ?? 0) > 0;
+  async getActiveGenres(): Promise<GenresEntity[]> {
+    return await this.repository.find({
+      where: {
+        is_deleted: false,
+        is_active: true,
+      } as any as FindOptionsWhere<GenresEntity>,
+      order: { title: 'ASC' },
+    });
   }
 
-  async count(): Promise<number> {
-    return await this.repository.count();
+  async incrementTrackCount(id: string, count: number = 1): Promise<void> {
+    await this.increment(id, 'track_count', count);
+  }
+
+  async incrementAlbumCount(id: string, count: number = 1): Promise<void> {
+    await this.increment(id, 'album_count', count);
+  }
+
+  async updatePopularity(id: string, popularity: number): Promise<void> {
+    await this.updateField(id, 'popularity', popularity);
   }
 }
 export { GenresRepository };

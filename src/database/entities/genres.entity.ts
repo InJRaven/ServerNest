@@ -11,14 +11,15 @@ import {
 } from 'typeorm';
 
 @Entity({ name: 'Genres' })
-@Index(['name', 'slug'])
+@Index(['title', 'slug'])
 @Index(['popularity', 'track_count', 'album_count'])
 class GenresEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
   @Column({ unique: true, nullable: false })
-  name: string;
+  @Index()
+  title: string;
 
   @Column({ unique: true, nullable: false })
   @Index()

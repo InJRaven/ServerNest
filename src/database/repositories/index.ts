@@ -1,4 +1,3 @@
-import { BaseRepository } from './base.repository';
 import { AdminRepository } from './admin.repository';
 import { UserRepository } from './user.repository';
 import { GenresRepository } from './genres.repository';
@@ -10,7 +9,6 @@ import { TrackArtistsRepository } from './track-artists.repository';
 import { Provider } from '@nestjs/common';
 
 export {
-  BaseRepository,
   AdminRepository,
   UserRepository,
   GenresRepository,
@@ -22,7 +20,6 @@ export {
 };
 export const AdminRepositoryProvider: Provider[] = [AdminRepository];
 export const GlobalRepositoriesProvider: Provider[] = [
-  BaseRepository,
   UserRepository,
   GenresRepository,
   ArtistsRepository,

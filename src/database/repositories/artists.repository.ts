@@ -1,158 +1,100 @@
-import { Injectable } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import { v4 as uuidv4 } from 'uuid';
+import { FindOptionsWhere, Repository } from 'typeorm';
 import { ArtistsEntity } from '@entities';
+import { BaseRepository } from './base.repository';
+import { Injectable } from '@nestjs/common';
 
+interface IArtistRepository {
+  findBySlug(slug: string): Promise<ArtistsEntity | null>;
+  findByTitle(title: string): Promise<ArtistsEntity | null>;
+  // searchArtists(
+  //   options: IArtistSearchOptions,
+  // ): Promise<IPaginatedResult<ArtistsEntity>>;
+  getTopArtists(limit: number): Promise<ArtistsEntity[]>;
+  getTrendingArtists(limit: number): Promise<ArtistsEntity[]>;
+  getArtistsByGenre(genre: string, limit: number): Promise<ArtistsEntity[]>;
+  incrementMonthlyListeners(id: string, count: number): Promise<void>;
+  incrementFollowers(id: string, count: number): Promise<void>;
+  updatePopularity(id: string, popularity: number): Promise<void>;
+}
 @Injectable()
-class ArtistsRepository {
-  constructor(
-    @InjectRepository(ArtistsEntity)
-    private readonly repository: Repository<ArtistsEntity>,
-  ) {}
-
-  /**
-   * Create/Update/Delete New Artist
-   */
-  async createArtist(data: Partial<ArtistsEntity>): Promise<ArtistsEntity> {
-    const artist = this.repository.create({ id: uuidv4(), ...data });
-    return await this.repository.save(artist);
+class ArtistsRepository
+  extends BaseRepository<ArtistsEntity>
+  implements IArtistRepository
+{
+  constructor(repository: Repository<ArtistsEntity>) {
+    super(repository);
+  }
+  async findBySlug(slug: string): Promise<ArtistsEntity | null> {
+    return await this.findOne({
+      slug,
+    } as any as FindOptionsWhere<ArtistsEntity>);
   }
 
-  async updateArtist(
-    id: string,
-    data: Partial<ArtistsEntity>,
-  ): Promise<ArtistsEntity | null> {
-    const result = await this.repository.update(id, data);
-    if (result.affected === 0) {
-      return null;
-    }
-    return await this.repository.findOne({ where: { id } });
+  async findByTitle(title: string): Promise<ArtistsEntity | null> {
+    return await this.findOne({
+      title,
+    } as any as FindOptionsWhere<ArtistsEntity>);
   }
 
-  async softDeleteArtist(id: string): Promise<void> {
-    await this.repository.update(id, {
-      is_deleted: true,
-    });
-  }
-
-  async hardDeleteArtist(id: string): Promise<void> {
-    await this.repository.delete(id);
-  }
-
-  /**
-   * Find Artist
-   */
-  async findArtistById(
-    id: string,
-    includeRelations: boolean = true,
-  ): Promise<ArtistsEntity | null> {
-    return await this.repository.findOne({
-      where: { id, is_deleted: false },
-      relations: includeRelations ? ['albums', 'song_artists'] : [],
-    });
-  }
-
-  async findArtistByIdIncludingDeleted(
-    id: string,
-    includeRelations: boolean = false,
-  ): Promise<ArtistsEntity | null> {
-    return await this.repository.findOne({
-      where: { id },
-      relations: includeRelations ? ['albums', 'song_artists'] : [],
-    });
-  }
-
-  async findByIdIncludingDeleted(
-    id: string,
-    includeRelations: boolean = false,
-  ): Promise<ArtistsEntity | null> {
-    return await this.repository.findOne({
-      where: { id },
-      relations: includeRelations ? ['albums', 'song_artists'] : [],
-    });
-  }
-
-  async findBySlug(
-    slug: string,
-    includeRelations: boolean = true,
-  ): Promise<ArtistsEntity | null> {
-    return await this.repository.findOne({
-      where: { slug, is_deleted: false },
-      relations: includeRelations ? ['albums', 'song_artists'] : [],
-    });
-  }
-
-  async findArtistByTitle(title: string): Promise<ArtistsEntity | null> {
-    return await this.repository.findOne({
-      where: { title, is_deleted: false },
-    });
-  }
-
-  async findAllArtists(): Promise<ArtistsEntity[]> {
-    return await this.repository.find();
-  }
-
-  async searchByTitle(searchTerm: string): Promise<ArtistsEntity[]> {
-    return await this.repository
-      .createQueryBuilder('artist')
-      .where('artist.title ILIKE :searchTerm', {
-        searchTerm: `%${searchTerm}%`,
-      })
-      .orderBy('artist.title', 'ASC')
-      .getMany();
-  }
-
-  /**
-   * Get Artists
-   */
   async getTopArtists(limit: number = 10): Promise<ArtistsEntity[]> {
     return await this.repository.find({
-      where: { is_deleted: false, verified: true },
-      order: { popularity: 'DESC' },
+      where: {
+        is_deleted: false,
+        status: 'active',
+      } as any as FindOptionsWhere<ArtistsEntity>,
+      order: { popularity: 'DESC', monthly_listeners: 'DESC' },
       take: limit,
     });
   }
 
   async getTrendingArtists(limit: number = 10): Promise<ArtistsEntity[]> {
     return await this.repository.find({
-      where: { is_deleted: false },
-      order: { monthly_listeners: 'DESC' },
+      where: { is_deleted: false, status: 'active' },
+      order: {
+        monthly_listeners: 'DESC', // ← Hot right now!
+        followers: 'DESC',
+        popularity: 'DESC',
+      },
       take: limit,
     });
   }
 
-  async getNewArtists(limit: number = 10): Promise<ArtistsEntity[]> {
-    return await this.repository.find({
-      where: { is_deleted: false },
-      order: { createdAt: 'DESC' },
-      take: limit,
-    });
-  }
-
-  /**
-   * Restore Artist
-   */
-  async restoreArtist(id: string): Promise<void> {
-    await this.repository.update(id, {
-      is_deleted: false,
-    });
-  }
-
-  /**
-   * Check if title exists
-   */
-  async isTitleExists(title: string, excludeId?: string): Promise<boolean> {
-    const queryBuilder = this.repository
+  async getArtistsByGenre(
+    genre: string,
+    limit: number = 10,
+  ): Promise<ArtistsEntity[]> {
+    return await this.repository
       .createQueryBuilder('artist')
-      .where('artist.title = :title AND artist.is_deleted = false', { title });
+      .where('artist.is_deleted = :isDeleted', { isDeleted: false })
+      .andWhere('artist.status = :status', { status: 'active' })
+      .andWhere(':genre = ANY(artist.genres)', { genre })
+      .orderBy('artist.popularity', 'DESC')
+      .take(limit)
+      .getMany();
+  }
 
-    if (excludeId) {
-      queryBuilder.andWhere('artist.id != :excludeId', { excludeId });
-    }
+  /**
+   * Increment monthly listeners
+   */
+  async incrementMonthlyListeners(
+    id: string,
+    count: number = 1,
+  ): Promise<void> {
+    await this.increment(id, 'monthly_listeners', count);
+  }
 
-    const count = await queryBuilder.getCount();
-    return count > 0;
+  /**
+   * Increment followers
+   */
+  async incrementFollowers(id: string, count: number = 1): Promise<void> {
+    await this.increment(id, 'followers', count);
+  }
+
+  /**
+   * Update popularity
+   */
+  async updatePopularity(id: string, popularity: number): Promise<void> {
+    await this.updateField(id, 'popularity', popularity);
   }
 }
 export { ArtistsRepository };

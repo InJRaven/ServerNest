@@ -52,7 +52,7 @@ class ArtistMapper {
   /**
    * Entity[] → List Response DTO[]
    */
-  toListResponseDtoList(entities: ArtistsEntity[]): ArtistListResponseDTO[] {
+  toListResponseDTOList(entities: ArtistsEntity[]): ArtistListResponseDTO[] {
     return entities.map((entity) => this.toListResponseDTO(entity));
   }
 

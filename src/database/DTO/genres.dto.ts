@@ -11,7 +11,7 @@ import {
 class GenresDTO {
   @IsString()
   @MaxLength(100)
-  name: string;
+  title: string;
 
   @IsOptional()
   @IsString()

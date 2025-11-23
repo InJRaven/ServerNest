@@ -1,162 +1,130 @@
 import { Injectable } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { ILike, Repository } from 'typeorm';
-import { v4 as uuidv4 } from 'uuid';
+import { FindOptionsWhere, Repository } from 'typeorm';
 import { TracksEntity } from '@entities';
+import { BaseRepository } from './base.repository';
+
+interface ITrackRepository {
+  findBySlug(slug: string): Promise<TracksEntity | null>;
+  findByTitle(title: string): Promise<TracksEntity | null>;
+
+  findByAlbumId(albumId: string): Promise<TracksEntity[]>;
+  // searchTracks(
+  //   options: ITrackSearchOptions,
+  // ): Promise<IPaginatedResult<TracksEntity>>;
+  getTopTracks(limit: number): Promise<TracksEntity[]>;
+  getTracksByArtist(artistId: string, limit: number): Promise<TracksEntity[]>;
+  getTracksByGenre(genreId: string, limit: number): Promise<TracksEntity[]>;
+  getTrendingTracks(limit: number): Promise<TracksEntity[]>;
+  incrementPlays(id: string, count: number): Promise<void>;
+  incrementLikes(id: string, count: number): Promise<void>;
+  updatePopularity(id: string, popularity: number): Promise<void>;
+}
 
 @Injectable()
-class TrackRepository {
-  constructor(
-    @InjectRepository(TracksEntity)
-    private readonly repository: Repository<TracksEntity>,
-  ) {}
-
-  /**
-   * Create/Update/Delete Track
-   */
-  async createTrack(data: Partial<TracksEntity>): Promise<TracksEntity> {
-    const track = this.repository.create({ id: uuidv4(), ...data });
-    return await this.repository.save(track);
+class TrackRepository
+  extends BaseRepository<TracksEntity>
+  implements ITrackRepository
+{
+  constructor(repository: Repository<TracksEntity>) {
+    super(repository);
   }
 
-  async updateTrack(
-    id: string,
-    data: Partial<TracksEntity>,
-  ): Promise<TracksEntity | null> {
-    const result = await this.repository.update(id, data);
-
-    if (result.affected === 0) {
-      return null;
-    }
-
-    return await this.repository.findOne({ where: { id } });
+  async findByTitle(title: string): Promise<TracksEntity | null> {
+    return await this.findOne({
+      title,
+    } as any as FindOptionsWhere<TracksEntity>);
   }
-
-  async softDeleteTrack(id: string): Promise<void> {
-    await this.repository.update(id, { is_deleted: true });
-  }
-
-  async hardDeleteTrack(id: string): Promise<void> {
-    await this.repository.delete(id);
-  }
-
-  /**
-   * Find Tracks
-   */
-  async findTrackById(
-    id: string,
-    includeRelations: boolean = true,
-  ): Promise<TracksEntity | null> {
+  async findBySlug(slug: string): Promise<TracksEntity | null> {
     return await this.repository.findOne({
-      where: { id, is_deleted: false },
-      relations: includeRelations
-        ? ['album', 'track_artists', 'track_genres']
-        : [],
+      where: {
+        slug,
+        is_deleted: false,
+      } as any as FindOptionsWhere<TracksEntity>,
+      relations: ['album', 'album.artist', 'track_artists', 'track_genres'],
     });
   }
 
-  async findTrackByIdIncludingDeleted(
-    id: string,
-    includeRelations: boolean = true,
-  ): Promise<TracksEntity | null> {
-    return await this.repository.findOne({
-      where: { id },
-      relations: includeRelations
-        ? ['album', 'track_artists', 'track_genres']
-        : [],
-    });
-  }
-
-  async findTrackByTitle(title: string): Promise<TracksEntity | null> {
-    return await this.repository.findOne({
-      where: { title, is_deleted: false },
-    });
-  }
-
-  async findTrackByAlbumId(albumId: string): Promise<TracksEntity[]> {
+  async findByAlbumId(albumId: string): Promise<TracksEntity[]> {
     return await this.repository.find({
-      where: { album_id: albumId, is_deleted: false },
+      where: {
+        album_id: albumId,
+        is_deleted: false,
+      } as any as FindOptionsWhere<TracksEntity>,
       order: { track_no: 'ASC' },
     });
   }
 
-  async findByAlbumIdWithArtists(albumId: string): Promise<TracksEntity[]> {
+  async getTopTracks(limit: number = 10): Promise<TracksEntity[]> {
     return await this.repository.find({
-      where: { album_id: albumId },
-      order: { track_no: 'ASC' },
-    });
-  }
-
-  async findAllTracks(): Promise<TracksEntity[]> {
-    return await this.repository.find({
-      where: { is_deleted: false },
-      order: { createdAt: 'DESC' },
-    });
-  }
-
-  async findAllTracksIncludingDeleted(): Promise<TracksEntity[]> {
-    return await this.repository.find({
-      order: { createdAt: 'DESC' },
-    });
-  }
-
-  /**
-   * Get Tracks
-   */
-  async getPopularTracks(limit: number = 10): Promise<TracksEntity[]> {
-    return await this.repository.find({
-      where: { is_deleted: false },
-      order: { popularity: 'DESC' },
+      where: {
+        is_deleted: false,
+        status: 'public',
+      } as any as FindOptionsWhere<TracksEntity>,
+      relations: ['album', 'album.artist'],
+      order: { popularity: 'DESC', play_count: 'DESC' },
       take: limit,
     });
+  }
+
+  async getTracksByArtist(
+    artistId: string,
+    limit: number = 10,
+  ): Promise<TracksEntity[]> {
+    return await this.repository
+      .createQueryBuilder('track')
+      .leftJoinAndSelect('track.album', 'album')
+      .leftJoinAndSelect('album.artist', 'artist')
+      .leftJoin('track.track_artists', 'track_artist')
+      .where('track.is_deleted = :isDeleted', { isDeleted: false })
+      .andWhere('track.status = :status', { status: 'public' })
+      .andWhere(
+        '(album.artist_id = :artistId OR track_artist.artist_id = :artistId)',
+        { artistId },
+      )
+      .orderBy('track.popularity', 'DESC')
+      .take(limit)
+      .getMany();
+  }
+
+  async getTracksByGenre(
+    genreId: string,
+    limit: number = 10,
+  ): Promise<TracksEntity[]> {
+    return await this.repository
+      .createQueryBuilder('track')
+      .leftJoinAndSelect('track.album', 'album')
+      .leftJoinAndSelect('album.artist', 'artist')
+      .leftJoin('track.track_genres', 'track_genre')
+      .where('track.is_deleted = :isDeleted', { isDeleted: false })
+      .andWhere('track.status = :status', { status: 'public' })
+      .andWhere('track_genre.genre_id = :genreId', { genreId })
+      .orderBy('track.popularity', 'DESC')
+      .take(limit)
+      .getMany();
   }
 
   async getTrendingTracks(limit: number = 10): Promise<TracksEntity[]> {
     return await this.repository.find({
-      where: { is_deleted: false },
-      order: { play_count: 'DESC' },
-      take: limit,
-    });
-  }
-
-  async getNewReleases(limit: number = 10): Promise<TracksEntity[]> {
-    return await this.repository.find({
-      where: { is_deleted: false },
-      order: { release_date: 'DESC' },
-      take: limit,
-    });
-  }
-
-  async count(): Promise<number> {
-    return await this.repository.count();
-  }
-
-  async searchTracks(
-    query: string,
-    limit: number = 10,
-  ): Promise<TracksEntity[]> {
-    return await this.repository.find({
       where: {
-        title: ILike(`%${query}%`),
         is_deleted: false,
-      },
-      order: { popularity: 'DESC' },
+        status: 'public',
+      } as any as FindOptionsWhere<TracksEntity>,
+      relations: ['album', 'album.artist'],
+      order: { play_count: 'DESC', popularity: 'DESC' },
       take: limit,
     });
   }
 
-  async findByDuration(
-    minDuration: string,
-    maxDuration: string,
-  ): Promise<TracksEntity[]> {
-    return await this.repository
-      .createQueryBuilder('tracks')
-      .where('tracks.duration BETWEEN :minDuration AND :maxDuration', {
-        minDuration,
-        maxDuration,
-      })
-      .orderBy('tracks.duration', 'ASC')
-      .getMany();
+  async incrementPlays(id: string, count: number = 1): Promise<void> {
+    await this.increment(id, 'play_count', count);
+  }
+
+  async incrementLikes(id: string, count: number = 1): Promise<void> {
+    await this.increment(id, 'like_count', count);
+  }
+
+  async updatePopularity(id: string, popularity: number): Promise<void> {
+    await this.updateField(id, 'popularity', popularity);
   }
 }
 export { TrackRepository };

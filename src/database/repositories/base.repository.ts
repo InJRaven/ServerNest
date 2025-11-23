@@ -1,4 +1,5 @@
 import { IBaseRepository } from '@interfaces';
+import { SlugEncoderUtil } from '@utils';
 import {
   Repository,
   FindOptionsWhere,
@@ -6,6 +7,7 @@ import {
   DeepPartial,
   In,
 } from 'typeorm';
+import { v4 as uuidv4 } from 'uuid';
 
 abstract class BaseRepository<
   Entity extends { id: string; is_deleted?: boolean },
@@ -13,13 +15,62 @@ abstract class BaseRepository<
 {
   constructor(protected repository: Repository<Entity>) {}
 
+  /**
+   * Generate slug if entity has title or name field and no slug yet
+   * Uses SlugEncoderUtil to create readable + encoded ID slug
+   *
+   * @private
+   */
+  private generateSlug(entity: any): void {
+    if ('slug' in entity && !entity.slug) {
+      const textField = entity.title || entity.name;
+
+      if (textField && entity.id) {
+        entity.slug = SlugEncoderUtil.generateSlug(textField, entity.id);
+      }
+    }
+  }
+
+  /**
+   * Regenerate slug if title or name was updated
+   * Uses SlugEncoderUtil to create new slug from updated text
+   *
+   * @private
+   */
+  private updateSlug(entity: any, updateData: DeepPartial<Entity>): void {
+    // Check if entity has slug field
+    if ('slug' in entity) {
+      // Check if title or name was updated
+      const titleUpdated = 'title' in updateData && updateData.title;
+      const nameUpdated = 'name' in updateData && updateData.name;
+
+      if (titleUpdated || nameUpdated) {
+        const textField = entity.title || entity.name;
+
+        if (textField && entity.id) {
+          entity.slug = SlugEncoderUtil.generateSlug(textField, entity.id);
+        }
+      }
+    }
+  }
   async create(data: DeepPartial<Entity>): Promise<Entity> {
+    if (!data.id) {
+      data.id = uuidv4();
+    }
     const entity = this.repository.create(data);
+    this.generateSlug(entity);
     return await this.repository.save(entity);
   }
 
   async createMany(data: DeepPartial<Entity>[]): Promise<Entity[]> {
-    const entities = this.repository.create(data);
+    const dataWithIds = data.map((item) => ({
+      ...item,
+      id: item.id || uuidv4(),
+    }));
+
+    const entities = this.repository.create(dataWithIds);
+
+    entities.forEach((entity) => this.generateSlug(entity));
     return await this.repository.save(entities);
   }
 
@@ -54,8 +105,18 @@ abstract class BaseRepository<
     });
   }
 
+  async findBySlug(slug: string): Promise<Entity | null> {
+    const id = SlugEncoderUtil.extractId(slug);
+
+    if (id) {
+      return await this.findById(id);
+    }
+    return await this.repository.findOne({
+      where: { slug, is_deleted: false } as unknown as FindOptionsWhere<Entity>,
+    });
+  }
   /* ---------------------------------------------------------
-   * ADMIN METHOD
+   * FIND METHOD
    * --------------------------------------------------------- */
   async findByIdWithDeleted(id: string): Promise<Entity | null> {
     return await this.repository.findOne({
@@ -64,6 +125,16 @@ abstract class BaseRepository<
     });
   }
 
+  async findBySlugWithDeleted(slug: string): Promise<Entity | null> {
+    const id = SlugEncoderUtil.extractId(slug);
+    if (id) {
+      return await this.findById(id);
+    }
+    return await this.repository.findOne({
+      where: { slug } as unknown as FindOptionsWhere<Entity>,
+      withDeleted: true,
+    });
+  }
   async findOneWithDeleted(
     where: FindOptionsWhere<Entity>,
   ): Promise<Entity | null> {
@@ -94,14 +165,17 @@ abstract class BaseRepository<
   /* ---------------------------------------------------------
    * ADMIN METHOD
    * --------------------------------------------------------- */
-
   async update(id: string, data: DeepPartial<Entity>): Promise<Entity> {
-    await this.repository.update(id, data as any);
-    const updated = await this.findById(id);
-    if (!updated) {
-      throw new Error('Entity not found after update');
+    const entity = await this.findById(id);
+
+    if (!entity) {
+      throw new Error(`Entity with id ${id} not found`);
     }
-    return updated;
+
+    Object.assign(entity, data);
+
+    this.updateSlug(entity, data);
+    return await this.repository.save(entity);
   }
 
   async updateMany(
@@ -147,6 +221,82 @@ abstract class BaseRepository<
       where: { ...where, is_deleted: false } as FindOptionsWhere<Entity>,
     });
     return count > 0;
+  }
+
+  /* ---------------------------------------------------------
+   * UTILITY OPERATIONS
+   * --------------------------------------------------------- */
+  async increment(
+    id: string,
+    field: keyof Entity,
+    value: number = 1,
+  ): Promise<void> {
+    await this.repository.increment({ id } as any, field as string, value);
+  }
+
+  async decrement(
+    id: string,
+    field: keyof Entity,
+    value: number = 1,
+  ): Promise<void> {
+    await this.repository.decrement({ id } as any, field as string, value);
+  }
+
+  async updateField(
+    id: string,
+    field: keyof Entity,
+    value: any,
+  ): Promise<void> {
+    await this.repository.update(id, { [field]: value } as any);
+  }
+
+  /* ---------------------------------------------------------
+   * QUERY OPERATIONS
+   * --------------------------------------------------------- */
+
+  async findByField(field: keyof Entity, value: any): Promise<Entity | null> {
+    return await this.repository.findOne({
+      where: {
+        [field]: value,
+        is_deleted: false,
+      } as unknown as FindOptionsWhere<Entity>,
+    });
+  }
+
+  async findAllByField(
+    field: keyof Entity,
+    value: any,
+    options?: FindManyOptions<Entity>,
+  ): Promise<Entity[]> {
+    return await this.repository.find({
+      ...options,
+      where: {
+        [field]: value,
+        is_deleted: false,
+      } as unknown as FindOptionsWhere<Entity>,
+    });
+  }
+
+  async findRecent(
+    limit: number = 10,
+    sortField: keyof Entity = 'createdAt' as keyof Entity,
+  ): Promise<Entity[]> {
+    return await this.repository.find({
+      where: { is_deleted: false } as unknown as FindOptionsWhere<Entity>,
+      order: { [sortField]: 'DESC' } as any,
+      take: limit,
+    });
+  }
+
+  async findPopular(
+    limit: number = 10,
+    popularityField: keyof Entity = 'popularity' as keyof Entity,
+  ): Promise<Entity[]> {
+    return await this.repository.find({
+      where: { is_deleted: false } as unknown as FindOptionsWhere<Entity>,
+      order: { [popularityField]: 'DESC' } as any,
+      take: limit,
+    });
   }
 }
 export { BaseRepository };

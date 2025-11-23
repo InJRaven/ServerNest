@@ -1,4 +1,5 @@
 import { StringUtil } from './string.util';
 import { ResponseUtil } from './response.util';
-
-export { StringUtil, ResponseUtil };
+import { SlugEncoderUtil } from './slug-encoder.util';
+import { LoggerUtil } from './logger.util';
+export { StringUtil, ResponseUtil, SlugEncoderUtil, LoggerUtil };

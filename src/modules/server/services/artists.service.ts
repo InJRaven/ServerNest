@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { ArtistsRepository } from '@repositories';
 import { ArtistsDTO } from '@DTO';
 import {
@@ -6,7 +6,7 @@ import {
   EntityNotFoundException,
   InvalidOperationException,
 } from '@exceptions';
-import { ResponseUtil, StringUtil } from '@utils';
+import { ResponseUtil } from '@utils';
 import { ArtistMapper } from '@modules/server/mapper';
 import { IApiResponse } from '@interfaces';
 
@@ -19,55 +19,53 @@ class ArtistsService {
 
   async createArtist(data: ArtistsDTO): Promise<IApiResponse> {
     if (!data.title) {
-      throw new InvalidOperationException('Name is required');
+      throw new InvalidOperationException('Artist title is required');
     }
 
-    const titleExists = await this.repository.findArtistByTitle(data.title);
+    const titleExists = await this.repository.findByTitle(data.title);
     if (titleExists) {
       throw new EntityAlreadyExistsException('Artist', 'title', data.title);
     }
 
-    const convertNameToSlug = StringUtil.slugify(data.title);
+    const newArtist = await this.repository.create(data);
 
-    const newArtist = await this.repository.createArtist({
-      ...data,
-      slug: convertNameToSlug,
-    });
-
-    return ResponseUtil.created('Artist created successfully', {
-      artistId: newArtist.id,
-    });
+    return ResponseUtil.created(
+      'Artist created successfully',
+      this.mapper.toResponseDTO(newArtist),
+    );
   }
 
   async updateArtist(id: string, data: ArtistsDTO): Promise<IApiResponse> {
-    const artist = await this.repository.findArtistById(id);
+    const artist = await this.repository.findById(id);
 
     if (!artist) {
       throw new EntityNotFoundException('Artist', id);
     }
 
     if (data.title && data.title !== artist.title) {
-      const nameExists = await this.repository.findArtistByTitle(data.title);
+      const nameExists = await this.repository.findByTitle(data.title);
       if (nameExists)
         throw new EntityAlreadyExistsException('Artist', 'name', data.title);
     }
-    const updated = { slug: StringUtil.slugify(data.title), ...data };
-    const updatedArtist = await this.repository.updateArtist(id, updated);
+    const updatedArtist = await this.repository.update(id, data);
 
-    return ResponseUtil.success('Artist updated successfully', updatedArtist);
+    return ResponseUtil.success(
+      'Artist updated successfully',
+      this.mapper.toResponseDTO(updatedArtist),
+    );
   }
 
   /**
    * Soft delete artist
    */
   async softDeleteArtist(id: string): Promise<IApiResponse> {
-    const artist = await this.repository.findArtistById(id);
+    const artist = await this.repository.findById(id);
 
     if (!artist) {
       throw new EntityNotFoundException('Artist', id);
     }
 
-    await this.repository.softDeleteArtist(id);
+    await this.repository.softDelete(id);
     return ResponseUtil.noContent('Artist deleted successfully');
   }
 
@@ -76,15 +74,12 @@ class ArtistsService {
    */
 
   async hardDeleteArtist(id: string): Promise<IApiResponse> {
-    const artist = await this.repository.findArtistByIdIncludingDeleted(
-      id,
-      false,
-    );
+    const artist = await this.repository.findByIdWithDeleted(id);
     if (!artist) {
       throw new EntityNotFoundException('Artist', id);
     }
 
-    await this.repository.hardDeleteArtist(id);
+    await this.repository.hardDelete(id);
 
     return ResponseUtil.noContent('Artist permanently deleted');
   }
@@ -93,10 +88,7 @@ class ArtistsService {
    * Restore artist
    */
   async restoreArtist(id: string): Promise<IApiResponse> {
-    const artist = await this.repository.findArtistByIdIncludingDeleted(
-      id,
-      false,
-    );
+    const artist = await this.repository.findByIdWithDeleted(id);
     if (!artist) {
       throw new EntityNotFoundException('Artist', id);
     }
@@ -104,10 +96,29 @@ class ArtistsService {
       throw new InvalidOperationException('Artist is not deleted');
     }
 
-    await this.repository.restoreArtist(id);
-    const restoredArtist = await this.repository.findArtistById(id);
+    await this.repository.restore(id);
+    const restoredArtist = await this.repository.findById(id);
 
     return ResponseUtil.success('Artist restored successfully', restoredArtist);
+  }
+
+  /**
+   * Get all artists
+   */
+  async getAllArtists(): Promise<IApiResponse> {
+    try {
+      const astists = await this.repository.findAll();
+
+      return ResponseUtil.success(
+        'Artists retrieved successfully',
+        this.mapper.toListResponseDTOList(astists),
+      );
+    } catch (error) {
+      console.log(error);
+      throw new InternalServerErrorException(
+        'Failed to retrieve artists. Please try again later.',
+      );
+    }
   }
 
   /**

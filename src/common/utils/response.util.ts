@@ -1,7 +1,7 @@
-import { ApiResponse } from '@interfaces';
+import { IApiResponse } from '@interfaces';
 
 export class ResponseUtil {
-  static success<T>(message: string, data?: T): ApiResponse<T> {
+  static success<T>(message: string, data?: T): IApiResponse<T> {
     return {
       success: true,
       message,
@@ -9,7 +9,7 @@ export class ResponseUtil {
     };
   }
 
-  static created<T>(message: string, data: T): ApiResponse<T> {
+  static created<T>(message: string, data: T): IApiResponse<T> {
     return {
       success: true,
       message,
@@ -17,7 +17,7 @@ export class ResponseUtil {
     };
   }
 
-  static noContent(message: string): ApiResponse {
+  static noContent(message: string): IApiResponse {
     return {
       success: true,
       message,
