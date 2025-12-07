@@ -1,16 +1,9 @@
-import { FindOptionsWhere, Repository } from 'typeorm';
+import { Repository } from 'typeorm';
 import { ArtistsEntity } from '@entities';
-import { BaseRepository } from './base.repository';
+import { BaseRepository } from '@base';
 import { Injectable } from '@nestjs/common';
 
 interface IArtistRepository {
-  findBySlug(slug: string): Promise<ArtistsEntity | null>;
-  findByTitle(title: string): Promise<ArtistsEntity | null>;
-  // searchArtists(
-  //   options: IArtistSearchOptions,
-  // ): Promise<IPaginatedResult<ArtistsEntity>>;
-  getTopArtists(limit: number): Promise<ArtistsEntity[]>;
-  getTrendingArtists(limit: number): Promise<ArtistsEntity[]>;
   getArtistsByGenre(genre: string, limit: number): Promise<ArtistsEntity[]>;
   incrementMonthlyListeners(id: string, count: number): Promise<void>;
   incrementFollowers(id: string, count: number): Promise<void>;
@@ -23,40 +16,6 @@ class ArtistsRepository
 {
   constructor(repository: Repository<ArtistsEntity>) {
     super(repository);
-  }
-  async findBySlug(slug: string): Promise<ArtistsEntity | null> {
-    return await this.findOne({
-      slug,
-    } as any as FindOptionsWhere<ArtistsEntity>);
-  }
-
-  async findByTitle(title: string): Promise<ArtistsEntity | null> {
-    return await this.findOne({
-      title,
-    } as any as FindOptionsWhere<ArtistsEntity>);
-  }
-
-  async getTopArtists(limit: number = 10): Promise<ArtistsEntity[]> {
-    return await this.repository.find({
-      where: {
-        is_deleted: false,
-        status: 'active',
-      } as any as FindOptionsWhere<ArtistsEntity>,
-      order: { popularity: 'DESC', monthly_listeners: 'DESC' },
-      take: limit,
-    });
-  }
-
-  async getTrendingArtists(limit: number = 10): Promise<ArtistsEntity[]> {
-    return await this.repository.find({
-      where: { is_deleted: false, status: 'active' },
-      order: {
-        monthly_listeners: 'DESC', // ← Hot right now!
-        followers: 'DESC',
-        popularity: 'DESC',
-      },
-      take: limit,
-    });
   }
 
   async getArtistsByGenre(

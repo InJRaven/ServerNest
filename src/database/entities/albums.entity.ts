@@ -120,12 +120,12 @@ class AlbumsEntity {
     onDelete: 'CASCADE',
   })
   @JoinColumn({ name: 'artist_id' })
-  artist: ArtistsEntity;
+  artist: ArtistsEntity; // PROPERTY RELATIONSHIP
 
   @OneToMany(() => TracksEntity, (track) => track.album)
-  tracks: TracksEntity[];
+  tracks: TracksEntity[]; // PROPERTY RELATIONSHIP
 
   @OneToMany(() => AlbumGenresEntity, (albumGenre) => albumGenre.album)
-  album_genres: AlbumGenresEntity[];
+  album_genres: AlbumGenresEntity[]; // PROPERTY RELATIONSHIP
 }
 export { AlbumsEntity };

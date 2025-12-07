@@ -66,7 +66,7 @@ class JwtAuthGuard implements CanActivate {
     try {
       const decoded = this.tokens.decodedAccessToken(token) as JwtPayload;
 
-      const admin = await this.admins.findById(decoded.userId);
+      const admin = await this.admins.findOne({ where: { id: decoded.id } });
       if (!admin) {
         throw new UnauthorizedException({
           code: 'USER_NOT_FOUND',

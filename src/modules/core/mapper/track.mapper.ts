@@ -1,5 +1,5 @@
 import { TracksEntity } from '@entities';
-import { TrackListResponseDTO, TrackResponseDTO } from '@modules/server/DTO';
+import { TrackListResponseDTO, TrackResponseDTO } from '@core/DTO';
 import { Injectable } from '@nestjs/common';
 import { StringUtil } from '@utils';
 

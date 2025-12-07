@@ -1,18 +1,20 @@
-import { FindOptionsWhere, Repository } from 'typeorm';
+import { FindManyOptions, Repository } from 'typeorm';
 import { AlbumsEntity } from '@entities';
-import { BaseRepository } from './base.repository';
 import { Injectable } from '@nestjs/common';
+import { IPagination, BaseRepository } from '@base';
 
 interface IAlbumRepository {
-  findBySlug(slug: string): Promise<AlbumsEntity | null>;
-  findByArtistId(artistId: string, limit?: number): Promise<AlbumsEntity[]>;
-  findByTitle(title: string): Promise<AlbumsEntity | null>;
   // searchAlbums(
   //   options: IAlbumSearchOptions,
   // ): Promise<IPaginatedResult<AlbumsEntity>>;
-  getTopAlbums(limit: number): Promise<AlbumsEntity[]>;
-  getNewReleases(limit: number): Promise<AlbumsEntity[]>;
-  getAlbumsByGenre(genre: string, limit: number): Promise<AlbumsEntity[]>;
+  // getTopAlbums(limit: number): Promise<AlbumsEntity[]>;
+  // getNewReleases(limit: number): Promise<AlbumsEntity[]>;
+  getAlbumsByGenre(
+    genre: string,
+    limit: number,
+    offset: number,
+    options?: FindManyOptions<AlbumsEntity>,
+  ): Promise<IPagination<AlbumsEntity>>;
   incrementPlays(id: string, count: number): Promise<void>;
   incrementLikes(id: string, count: number): Promise<void>;
   updatePopularity(id: string, popularity: number): Promise<void>;
@@ -29,72 +31,42 @@ class AlbumsRepository
     super(repository);
   }
 
-  async findByTitle(title: string): Promise<AlbumsEntity | null> {
-    return await this.findOne({
-      title,
-    } as any as FindOptionsWhere<AlbumsEntity>);
-  }
-  async findBySlug(slug: string): Promise<AlbumsEntity | null> {
-    return await this.repository.findOne({
-      where: {
-        slug,
-        is_deleted: false,
-      } as any as FindOptionsWhere<AlbumsEntity>,
-      relations: ['artist'],
-    });
-  }
-
-  async findByArtistId(
-    artistId: string,
-    limit: number = 10,
-  ): Promise<AlbumsEntity[]> {
-    return await this.repository.find({
-      where: {
-        artist_id: artistId,
-        is_deleted: false,
-      } as any as FindOptionsWhere<AlbumsEntity>,
-      order: { release_date: 'DESC' },
-      take: limit,
-    });
-  }
-
-  async getTopAlbums(limit: number = 10): Promise<AlbumsEntity[]> {
-    return await this.repository.find({
-      where: {
-        is_deleted: false,
-        status: 'public',
-      } as any as FindOptionsWhere<AlbumsEntity>,
-      relations: ['artist'],
-      order: { popularity: 'DESC', total_plays: 'DESC' },
-      take: limit,
-    });
-  }
-
-  async getNewReleases(limit: number = 10): Promise<AlbumsEntity[]> {
-    return await this.repository.find({
-      where: {
-        is_deleted: false,
-        status: 'public',
-      } as any as FindOptionsWhere<AlbumsEntity>,
-      relations: ['artist'],
-      order: { release_date: 'DESC' },
-      take: limit,
-    });
-  }
-
   async getAlbumsByGenre(
     genre: string,
     limit: number = 10,
-  ): Promise<AlbumsEntity[]> {
-    return await this.repository
-      .createQueryBuilder('album')
-      .leftJoinAndSelect('album.artist', 'artist')
-      .where('album.is_deleted = :isDeleted', { isDeleted: false })
+    offset: number = 0,
+    options?: FindManyOptions<AlbumsEntity>,
+  ): Promise<IPagination<AlbumsEntity>> {
+    const query = this.repository
+      .createQueryBuilder('albums')
+      .leftJoinAndSelect('album.artist', 'artist') // PROPERTY RELATIONSHIP NAME and alias of table relationship
+      .innerJoin('album.album_genres', 'albumGenre')
+      .innerJoin('albumGenre.genre', 'genre')
+      .where(
+        'album.is_deleted = :isDeleted',
+        options?.where?.['is_deleted'] ?? false,
+      )
       .andWhere('album.status = :status', { status: 'public' })
-      .andWhere(':genre = ANY(album.genres)', { genre })
-      .orderBy('album.popularity', 'DESC')
-      .take(limit)
-      .getMany();
+      .andWhere('genre.title = :genreTitle', { genreTitle: genre })
+      .orderBy('album.popularity', 'DESC');
+
+    const total = await query.getCount();
+    const data = await query.skip(offset).take(limit).getMany();
+
+    const totalPages = Math.ceil(total / limit);
+    const page = Math.floor(offset / limit);
+
+    return {
+      data,
+      meta: {
+        total,
+        page,
+        limit,
+        totalPages,
+        hasNextPage: offset + limit < total,
+        hasPreviousPage: page > 0,
+      },
+    };
   }
 
   async incrementPlays(id: string, count: number = 1): Promise<void> {

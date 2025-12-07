@@ -86,7 +86,7 @@ class LoggerUtil {
    * logger.operation('UPDATE', 'track', null, 250); // 250ms
    */
   operation(
-    operation: 'CREATE' | 'READ' | 'UPDATE' | 'DELETE' | 'SYNC',
+    operation: 'CREATE' | 'READ' | 'UPDATE' | 'DELETE' | 'SYNC' | 'RESTORE',
     entity: string,
     data?: any,
     duration?: number,

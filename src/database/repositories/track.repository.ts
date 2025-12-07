@@ -1,13 +1,15 @@
 import { Injectable } from '@nestjs/common';
-import { FindOptionsWhere, Repository } from 'typeorm';
+import { FindManyOptions, FindOptionsWhere, Repository } from 'typeorm';
 import { TracksEntity } from '@entities';
-import { BaseRepository } from './base.repository';
+import { BaseRepository } from '@base';
 
 interface ITrackRepository {
   findBySlug(slug: string): Promise<TracksEntity | null>;
   findByTitle(title: string): Promise<TracksEntity | null>;
 
-  findByAlbumId(albumId: string): Promise<TracksEntity[]>;
+  findByAlbumId(
+    options?: FindManyOptions<TracksEntity>,
+  ): Promise<TracksEntity[]>;
   // searchTracks(
   //   options: ITrackSearchOptions,
   // ): Promise<IPaginatedResult<TracksEntity>>;
@@ -31,25 +33,27 @@ class TrackRepository
 
   async findByTitle(title: string): Promise<TracksEntity | null> {
     return await this.findOne({
-      title,
-    } as any as FindOptionsWhere<TracksEntity>);
+      where: { title },
+    });
   }
   async findBySlug(slug: string): Promise<TracksEntity | null> {
     return await this.repository.findOne({
       where: {
         slug,
         is_deleted: false,
-      } as any as FindOptionsWhere<TracksEntity>,
+      },
       relations: ['album', 'album.artist', 'track_artists', 'track_genres'],
     });
   }
 
-  async findByAlbumId(albumId: string): Promise<TracksEntity[]> {
+  async findByAlbumId(
+    options?: FindManyOptions<TracksEntity>,
+  ): Promise<TracksEntity[]> {
     return await this.repository.find({
+      ...options,
       where: {
-        album_id: albumId,
-        is_deleted: false,
-      } as any as FindOptionsWhere<TracksEntity>,
+        ...(options?.where ?? {}),
+      },
       order: { track_no: 'ASC' },
     });
   }
@@ -59,7 +63,7 @@ class TrackRepository
       where: {
         is_deleted: false,
         status: 'public',
-      } as any as FindOptionsWhere<TracksEntity>,
+      },
       relations: ['album', 'album.artist'],
       order: { popularity: 'DESC', play_count: 'DESC' },
       take: limit,

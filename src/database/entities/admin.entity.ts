@@ -55,6 +55,9 @@ class AdminEntity {
   @Column({ default: false, nullable: true })
   is_super_admin: boolean;
 
+  @Column({ default: false })
+  is_deleted: boolean;
+
   @CreateDateColumn()
   createdAt: Date;
 

@@ -1,6 +1,6 @@
 class GenreResponseDTO {
   id: string;
-  name: string;
+  title: string;
   slug: string;
   description?: string;
   coverUrl?: string;
@@ -11,7 +11,7 @@ class GenreResponseDTO {
   color?: string;
   popularity: number;
   stats: {
-    songCount: string;
+    trackCount: string;
     albumCount: string;
   };
   relatedGenres?: string[];
@@ -22,11 +22,12 @@ class GenreResponseDTO {
 
 class GenreListResponseDTO {
   id: string;
-  name: string;
+  title: string;
   slug: string;
   coverUrl?: string;
   color?: string;
-  songCount: string;
+  trackCount: string;
+  albumCount: string;
   popularity: number;
 }
 

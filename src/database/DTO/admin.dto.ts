@@ -42,4 +42,8 @@ export class AdminDTO {
   @IsOptional()
   @IsBoolean()
   is_super_admin?: boolean;
+
+  @IsOptional()
+  @IsBoolean()
+  is_deleted?: boolean;
 }

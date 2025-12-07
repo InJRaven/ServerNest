@@ -1,5 +1,5 @@
 import { ArtistsEntity } from '@entities';
-import { ArtistListResponseDTO, ArtistResponseDTO } from '@modules/server/DTO';
+import { ArtistListResponseDTO, ArtistResponseDTO } from '@core/DTO';
 import { Injectable } from '@nestjs/common';
 import { StringUtil } from '@utils';
 
@@ -59,6 +59,7 @@ class ArtistMapper {
   /**
    * Entity → Response DTO with relations
    */
+  // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
   toResponseDTOWithRelations(entity: ArtistsEntity): ArtistResponseDTO & {
     albumCount?: number;
     songCount?: number;

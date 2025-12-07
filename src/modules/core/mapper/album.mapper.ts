@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { StringUtil } from '@utils';
 import { AlbumsEntity } from '@entities';
-import { AlbumListResponseDTO, AlbumResponseDTO } from '@modules/server/DTO';
+import { AlbumResponseDTO, AlbumListResponseDTO } from '@core/DTO';
 
 @Injectable()
 class AlbumMapper {
@@ -63,6 +63,20 @@ class AlbumMapper {
    */
   toListResponseDTOList(entities: AlbumsEntity[]): AlbumListResponseDTO[] {
     return entities.map((entity) => this.toListResponseDTO(entity));
+  }
+
+  /**
+   * Entity → Response DTO with relations
+   */
+  // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
+  toResponseDTOWithRelations(entity: AlbumsEntity): AlbumResponseDTO & {
+    trackCount?: number;
+  } {
+    const baseDTO = this.toResponseDTO(entity);
+    return {
+      ...baseDTO,
+      trackCount: entity.total_tracks || 0,
+    };
   }
 }
 

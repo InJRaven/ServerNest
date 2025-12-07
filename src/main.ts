@@ -8,7 +8,7 @@ import { ServerModule } from '@modules/server/server.module';
 
 async function bootstrap() {
   const server = await NestFactory.create(ServerModule);
-
+  server.setGlobalPrefix('api');
   server.use(cors({ origin: true, credentials: true }));
   server.use(express.json()); // body-parser
   server.use(express.urlencoded({ extended: false }));

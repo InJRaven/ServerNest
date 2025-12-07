@@ -28,7 +28,7 @@ export class PageController {
     }
 
     try {
-      const admin = await this.repository.findById(auth.id);
+      const admin = await this.repository.findOne({ where: { id: auth.id } });
 
       if (!admin) {
         throw new NotFoundException({

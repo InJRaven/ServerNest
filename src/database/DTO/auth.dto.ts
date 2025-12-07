@@ -11,9 +11,6 @@ class AdminLoginDTO {
 }
 
 class RegisterAdminDTO {
-  @IsString()
-  username: string;
-
   @IsEmail()
   email: string;
 

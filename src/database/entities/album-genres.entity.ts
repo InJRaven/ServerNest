@@ -27,10 +27,10 @@ class AlbumGenresEntity {
   genre_id: string;
 
   @Column({ default: false })
-  is_primary: boolean; // Genre chính của album
+  is_primary: boolean;
 
   @Column({ type: 'int', nullable: true })
-  weight: number; // Độ quan trọng (0-100), dùng để sort
+  weight: number;
 
   @CreateDateColumn()
   createdAt: Date;

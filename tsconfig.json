@@ -13,14 +13,17 @@
     "paths": {
       "@": ["./src"],
       "@config": ["./src/config"],
+      "@base": ["./src/common/base"],
       "@decorators": ["./src/common/decorators"],
       "@guards": ["./src/common/guards"],
       "@exceptions": ["./src/common/exceptions"],
       "@utils": ["./src/common/utils"],
       "@interfaces": ["./src/common/interfaces"],
 
-      "@shared": ["./src/shared"],
+      "@core/*": ["./src/modules/core/*"],
       "@modules/*": ["./src/modules/*"],
+
+      "@shared": ["./src/shared"],
       "@DTO": ["./src/database/DTO"],
       "@entities": ["./src/database/entities"],
       "@repositories": ["./src/database/repositories"]

@@ -4,9 +4,9 @@ import { TokenService } from './token.service';
 import { EmailService } from './email.service';
 
 export const AuthServices: Provider[] = [
-  AuthService,
+  // AuthService,
   TokenService,
   EmailService,
 ];
 
-export { AuthService, TokenService, EmailService };
+export { TokenService, EmailService };

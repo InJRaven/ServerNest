@@ -20,10 +20,10 @@ class AdminAuthService implements OnModuleInit {
 
   async onModuleInit() {
     const email = 'kuuhaku989898@gmail.com';
-    const exists = await this.repository.findByEmail(email);
+    const exists = await this.repository.findOne({ where: { email } });
     if (!exists) {
       const hashed = await bcrypt.hash('123456', 10);
-      await this.repository.createAdmin({
+      await this.repository.create({
         username: 'admin',
         email,
         password: hashed,
@@ -42,7 +42,7 @@ class AdminAuthService implements OnModuleInit {
     req: Request,
   ): Promise<{ message: string; access_token: string; refresh_token: string }> {
     const { email, password } = body;
-    const admin = await this.repository.findByEmail(email);
+    const admin = await this.repository.findOne({ where: { email } });
     if (!admin) throw new UnauthorizedException('Invalid email or password');
 
     const isMatch = await bcrypt.compare(password, admin.password);
@@ -73,22 +73,16 @@ class AdminAuthService implements OnModuleInit {
   }
 
   async register(body: RegisterAdminDTO) {
-    const { username, email, password, ...rest } = body;
+    const { email, password, ...rest } = body;
 
-    const exitingEmail = await this.repository.findByEmail(email);
+    const exitingEmail = await this.repository.findOne({ where: { email } });
     if (exitingEmail) {
       throw new BadRequestException('Email is already in use');
     }
 
-    const exitingAdminName = await this.repository.findByName(username);
-    if (exitingAdminName) {
-      throw new BadRequestException('User Name đã được sử dụng');
-    }
-
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    const newAdmin = await this.repository.createAdmin({
-      username,
+    const newAdmin = await this.repository.create({
       email,
       password: hashedPassword,
       ...rest,

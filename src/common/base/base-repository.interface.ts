@@ -7,7 +7,7 @@ interface IBaseRepository<Entity> {
   create(data: DeepPartial<Entity>): Promise<Entity>;
   createMany(data: DeepPartial<Entity>[]): Promise<Entity[]>;
 
-  update(id: string, data: DeepPartial<Entity>): Promise<Entity>;
+  update(data: DeepPartial<Entity>): Promise<Entity>;
   updateMany(
     where: FindOptionsWhere<Entity>,
     data: DeepPartial<Entity>,
@@ -18,29 +18,29 @@ interface IBaseRepository<Entity> {
    * --------------------------------------------------------- */
   hardDelete(id: string): Promise<boolean>;
   softDelete(id: string): Promise<boolean>;
-  deleteMany(where: FindOptionsWhere<Entity>): Promise<number>;
+  deleteMany(options: FindOptionsWhere<Entity>): Promise<number>;
   restore(id: string): Promise<boolean>;
 
   /* ---------------------------------------------------------
    * FIND OPERATIONS
    * --------------------------------------------------------- */
-  findById(id: string): Promise<Entity | null>;
-  findBySlug(slug: string): Promise<Entity | null>;
-  findOne(where: FindOptionsWhere<Entity>): Promise<Entity | null>;
+  findOne(options?: FindManyOptions<Entity>): Promise<Entity | null>;
   findAll(options?: FindManyOptions<Entity>): Promise<Entity[]>;
-  findByIds(ids: string[]): Promise<Entity[]>;
+  findAllPagination(
+    limit: number,
+    offset: number,
+    options?: FindManyOptions<Entity>,
+  ): Promise<IPagination<Entity>>;
+  findByIds(
+    ids: string[],
+    options?: FindManyOptions<Entity>,
+  ): Promise<Entity[]>;
 
-  findByIdWithDeleted(id: string): Promise<Entity | null>;
-  findOneWithDeleted(where: FindOptionsWhere<Entity>): Promise<Entity | null>;
-  findAllWithDeleted(options?: FindManyOptions<Entity>): Promise<Entity[]>;
-  findByIdsWithDeleted(ids: string[]): Promise<Entity[]>;
-  findBySlugWithDeleted(slug: string): Promise<Entity | null>;
-
-  count(where?: FindOptionsWhere<Entity>): Promise<number>;
+  count(options?: FindManyOptions<Entity>): Promise<number>;
   /* ---------------------------------------------------------
    * EXISTENCE CHECK
    * --------------------------------------------------------- */
-  exists(where: FindOptionsWhere<Entity>): Promise<boolean>;
+  exists(options?: FindManyOptions<Entity>): Promise<boolean>;
 
   /* ---------------------------------------------------------
    * UTILITY OPERATIONS
@@ -58,10 +58,13 @@ interface IBaseRepository<Entity> {
     value: any,
     options?: FindManyOptions<Entity>,
   ): Promise<Entity[]>;
-  findRecent(limit?: number, sortField?: keyof Entity): Promise<Entity[]>;
+  findRecent(
+    limit?: number,
+    options?: FindManyOptions<Entity>,
+  ): Promise<Entity[]>;
   findPopular(
     limit?: number,
-    popularityField?: keyof Entity,
+    options?: FindManyOptions<Entity>,
   ): Promise<Entity[]>;
 }
 

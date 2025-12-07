@@ -1,9 +1,7 @@
 import { GenresEntity } from '@entities';
-import { GenreListResponseDTO, GenreResponseDTO } from '@modules/server/DTO';
-import { Injectable } from '@nestjs/common';
+import { GenreListResponseDTO, GenreResponseDTO } from '@core/DTO';
 import { StringUtil } from '@utils';
 
-@Injectable()
 class GenreMapper {
   /**
    * Entity → Full Response DTO
@@ -11,7 +9,7 @@ class GenreMapper {
   toResponseDTO(entity: GenresEntity): GenreResponseDTO {
     return {
       id: entity.id,
-      name: entity.name,
+      title: entity.title,
       slug: entity.slug,
       description: entity.content,
       coverUrl: entity.cover_url,
@@ -22,7 +20,7 @@ class GenreMapper {
       color: entity.color,
       popularity: entity.popularity,
       stats: {
-        songCount: StringUtil.formatNumber(entity.track_count),
+        trackCount: StringUtil.formatNumber(entity.track_count),
         albumCount: StringUtil.formatNumber(entity.album_count),
       },
       relatedGenres: entity.related_genres,
@@ -38,11 +36,12 @@ class GenreMapper {
   toListResponseDto(entity: GenresEntity): GenreListResponseDTO {
     return {
       id: entity.id,
-      name: entity.name,
+      title: entity.title,
       slug: entity.slug,
       coverUrl: entity.cover_url,
       color: entity.color,
-      songCount: StringUtil.formatNumber(entity.track_count),
+      trackCount: StringUtil.formatNumber(entity.track_count),
+      albumCount: StringUtil.formatNumber(entity.album_count),
       popularity: entity.popularity,
     };
   }
@@ -50,7 +49,7 @@ class GenreMapper {
   /**
    * Entity[] → List Response DTO[]
    */
-  toListResponseDtoList(entities: GenresEntity[]): GenreListResponseDTO[] {
+  toListResponseDTOList(entities: GenresEntity[]): GenreListResponseDTO[] {
     return entities.map((entity) => this.toListResponseDto(entity));
   }
 }

@@ -11,6 +11,8 @@ import { TokenService } from './token.service';
 import jwt, { JwtPayload } from 'jsonwebtoken';
 import { EmailService } from './email.service';
 import { AdminRepository } from '@repositories';
+import { FindManyOptions } from 'typeorm';
+import { AdminEntity } from '@entities';
 
 @Injectable()
 class AuthService {
@@ -23,19 +25,19 @@ class AuthService {
   async register(body: RegisterDTO) {
     const { username, email, password, ...rest } = body;
 
-    const exitingEmail = await this.admins.findByEmail(email);
+    const exitingEmail = await this.admins.findOne({ where: { email } });
     if (exitingEmail) {
       throw new BadRequestException('Email is already in use');
     }
 
-    const exitingAdminName = await this.admins.findByName(username);
+    const exitingAdminName = await this.admins.findOne({ where: { username } });
     if (exitingAdminName) {
       throw new BadRequestException('User Name đã được sử dụng');
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    const newUser = await this.admins.createAdmin({
+    const newUser = await this.admins.create({
       username,
       email,
       password: hashedPassword,
@@ -47,24 +49,29 @@ class AuthService {
     return { message: 'Registration successful', userId: newUser.id };
   }
 
-  async verifyEmail(body: VerifyEmailDTO) {
-    const { email, otp } = body;
-    const user = await this.admins.findByEmail(email);
-    if (!user) throw new BadRequestException('User does not exist');
-    const isValid = await this.tokens.verifyOTP(user.email, otp);
-    if (!isValid) throw new BadRequestException('Invalid or expired OTP');
+  // async verifyEmail(body: VerifyEmailDTO) {
+  //   const { email, otp } = body;
+  //   const user = await this.admins.findOne({ where: { email } });
+  //   if (!user) throw new BadRequestException('User does not exist');
+  //   const isValid = await this.tokens.verifyOTP(user.email, otp);
+  //   if (!isValid) throw new BadRequestException('Invalid or expired OTP');
 
-    await this.admins.updateAdmin(user.id, { email_verified: true });
-    await this.tokens.removeOTP(user.email);
-    console.log(
-      `[VerifyOTP] User ${email} has successfully verified their email.`,
-    );
-    return { message: 'Account verification successful' };
-  }
+  //   await this.admins.update({
+  //     where: {
+  //       id: user.id,
+  //       email_verified: true,
+  //     } as unknown as FindManyOptions<AdminEntity>,
+  //   });
+  //   await this.tokens.removeOTP(user.email);
+  //   console.log(
+  //     `[VerifyOTP] User ${email} has successfully verified their email.`,
+  //   );
+  //   return { message: 'Account verification successful' };
+  // }
 
   async resendOTP(body: ResendOTPDTO) {
     const { email } = body;
-    const user = await this.admins.findByEmail(email);
+    const user = await this.admins.findOne({ where: { email } });
     if (!user) throw new BadRequestException('User does not exist');
 
     if (user.email_verified) return { message: 'Account already verified.' };
@@ -89,7 +96,7 @@ class AuthService {
     req: Request,
   ): Promise<{ message: string; access_token: string; refresh_token: string }> {
     const { email, password } = body;
-    const user = await this.admins.findByEmail(email);
+    const user = await this.admins.findOne({ where: { email } });
     if (!user) throw new UnauthorizedException('Invalid email or password');
 
     const isMatch = await bcrypt.compare(password, user.password);
