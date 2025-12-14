@@ -1,11 +1,11 @@
-import { AuthController } from '@modules/server/controllers/auth.controller';
-import { PageController } from '@modules/server/controllers/page.controller';
+import { AdminController } from './admin.controller';
+import { PageController } from './page.controller';
 import { GenresController } from './genres.controller';
 
-export const ServerController = [
-  AuthController,
+export const AdminControllers = [
+  AdminController,
   PageController,
   GenresController,
 ];
 
-export { AuthController, PageController, GenresController };
+export { AdminController, PageController, GenresController };

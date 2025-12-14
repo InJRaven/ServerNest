@@ -2,8 +2,8 @@ import { Module, Global } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { RedisConfig, Session, TypeORMConfig, Database } from '@config';
-import { GlobalEntities } from '@entities';
-import { GlobalRepositoriesProvider } from '@repositories';
+import { CoreEntities } from '@entities';
+import { CoreRepositoriesProvider } from '@repositories';
 import { EntityVerifier } from '@shared';
 
 @Global()
@@ -20,15 +20,15 @@ import { EntityVerifier } from '@shared';
       inject: [ConfigService],
       useFactory: TypeORMConfig,
     }),
-    TypeOrmModule.forFeature(GlobalEntities),
+    TypeOrmModule.forFeature(CoreEntities),
   ],
   providers: [
     Session,
     RedisConfig,
     Database,
     EntityVerifier,
-    ...GlobalRepositoriesProvider,
+    ...CoreRepositoriesProvider,
   ],
-  exports: [Session, RedisConfig, Database, ...GlobalRepositoriesProvider],
+  exports: [Session, RedisConfig, Database, ...CoreRepositoriesProvider],
 })
 export class ConfigServerModule {}

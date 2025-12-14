@@ -1,24 +1,39 @@
 import { NestFactory } from '@nestjs/core';
 import cookieParser from 'cookie-parser';
-import cors from 'cors';
 import express from 'express';
-
 import { Session, Database } from '@config';
-import { ServerModule } from '@modules/server/server.module';
+import { AdminModule } from '@admin/admin.module';
 
 async function bootstrap() {
-  const server = await NestFactory.create(ServerModule);
+  const server = await NestFactory.create(AdminModule);
+
+  // const httpsOptions = {
+  //   key: fs.readFileSync('localhost-key.pem'),
+  //   cert: fs.readFileSync('localhost.pem'),
+  // };
   server.setGlobalPrefix('api');
-  server.use(cors({ origin: true, credentials: true }));
-  server.use(express.json()); // body-parser
-  server.use(express.urlencoded({ extended: false }));
+
+  server.enableCors({
+    origin: 'http://localhost:5173',
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'x-refresh-token'],
+    exposedHeaders: ['authorization', 'x-refresh-token'],
+  });
+
   server.use(cookieParser());
 
   // Session Init
   server.use(server.get(Session).getSessionMiddleware());
+
+  server.use(express.json()); // body-parser
+  server.use(express.urlencoded({ extended: false }));
+
   // Check Database and Schema
   await server.get(Database).checkConnection();
   await server.get(Database).checkSchema();
   await server.listen(process.env.PORT ?? 3000);
+
+  console.log('🚀 HTTP Backend: http://localhost:3000');
 }
 void bootstrap();

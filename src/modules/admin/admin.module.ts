@@ -1,14 +1,14 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { GuardsProvider } from '@guards';
-import { ServerController } from '@modules/server/controllers';
-import { AdminServiceProvider } from '@modules/server/services';
-import { CoreMapper } from '@modules/core/mapper';
 import { AdminRepositoryProvider } from '@repositories';
 import { AdminEntitires } from '@entities';
-import { ConfigServerModule } from '@modules/config.module';
-import { CoreServiceProvier } from '@modules/core/services';
-import { AdminMappers } from '@modules/server/mapper';
+import { ConfigServerModule } from '../config.module';
+import { CoreServiceProvier } from '@core/services';
+import { AdminServiceProvider } from '@admin/services';
+import { AdminMappers } from '@admin/mapper';
+import { AdminControllers } from '@admin/controllers';
+import { CoreMapper } from '@core/mapper';
 
 @Module({
   imports: [ConfigServerModule, TypeOrmModule.forFeature(AdminEntitires)],
@@ -20,7 +20,7 @@ import { AdminMappers } from '@modules/server/mapper';
     ...CoreMapper,
     ...AdminMappers,
   ],
-  controllers: ServerController,
+  controllers: AdminControllers,
   exports: [...AdminRepositoryProvider, ...AdminServiceProvider],
 })
-export class ServerModule {}
+export class AdminModule {}

@@ -17,7 +17,7 @@ class TokenService {
     const jti = randomBytes(16).toString('hex');
     return jwt.sign(payload, jwtSecret, {
       algorithm: 'HS256',
-      expiresIn: '30m',
+      expiresIn: '30s',
       audience: 'web',
       jwtid: jti,
     });
@@ -36,7 +36,7 @@ class TokenService {
     });
   }
 
-  async saveToken(id: string, refreshToken: string, accessToken: string) {
+  async saveToken(id: string, accessToken: string, refreshToken: string) {
     const redisClient = this.redisConfig.getClient();
     await redisClient.set(
       `auth:session:${id}:tokens`,

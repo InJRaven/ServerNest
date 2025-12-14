@@ -146,7 +146,8 @@ class LoggerUtil {
       | 'LOGIN_SUCCESS'
       | 'LOGIN_FAILED'
       | 'PERMISSION_DENIED'
-      | 'TOKEN_EXPIRED',
+      | 'TOKEN_EXPIRED'
+      | 'TOKEN_INVALID',
     user: string,
     requiredRole?: string,
   ): void {

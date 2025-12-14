@@ -19,7 +19,7 @@ export {
   AlbumGenresEntity,
 };
 export const AdminEntitires = [AdminEntity];
-export const GlobalEntities = [
+export const CoreEntities = [
   UserEntity,
   GenresEntity,
   ArtistsEntity,

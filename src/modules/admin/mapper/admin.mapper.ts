@@ -1,5 +1,5 @@
 import { AdminEntity } from '@entities';
-import { AdminListResponseDTO, AdminResponseDTO } from '@modules/server/DTO';
+import { AdminListResponseDTO, AdminResponseDTO } from '@admin/DTO';
 
 class AdminMapper {
   toResponseDTO(entity: AdminEntity): AdminResponseDTO {
@@ -16,7 +16,7 @@ class AdminMapper {
       phone: entity.phone,
       language: entity.language,
       roles: entity.roles,
-      isSuperAdmin: entity.is_super_admin,
+      is_admin: entity.is_super_admin,
       is_deleted: entity.is_deleted,
       createdAt: entity.createdAt?.toISOString(),
     };
@@ -29,7 +29,7 @@ class AdminMapper {
       email: entity.email,
       fullName: `${entity.first_name} ${entity.last_name}`,
       roles: entity.roles,
-      isSuperAdmin: entity.is_super_admin,
+      is_admin: entity.is_super_admin,
     };
   }
 

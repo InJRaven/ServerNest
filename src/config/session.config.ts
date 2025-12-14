@@ -13,7 +13,10 @@ class Session {
     private readonly redis: RedisConfig,
   ) {
     const RedisStore = connectRedis(session);
-    this.RedisStore = new RedisStore({ client: this.redis.getClient() });
+    this.RedisStore = new RedisStore({
+      client: this.redis.getClient(),
+      ttl: 60 * 60 * 24 * 7,
+    });
   }
 
   getSessionMiddleware() {
@@ -22,12 +25,13 @@ class Session {
       secret: this.configService.get<string>('SESSION_SECRET_KEY') || '',
       resave: false,
       saveUninitialized: false,
-      rolling: true,
+      rolling: false,
       cookie: {
-        maxAge: 30 * 24 * 60 * 60 * 1000,
+        maxAge: 7 * 24 * 60 * 60 * 1000,
         httpOnly: true,
         secure: false,
         sameSite: 'lax',
+        domain: 'localhost',
       },
     });
   }

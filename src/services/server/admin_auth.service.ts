@@ -59,12 +59,9 @@ class AdminAuthService implements OnModuleInit {
     const refreshToken = this.tokens.createRefreshToken();
 
     if (req.session) {
-      req.session.accessToken = accessToken;
-
       /** Save Token To Redis */
       await this.tokens.saveToken(req.sessionID, accessToken, refreshToken);
     }
-
     return {
       message: 'Login successful',
       access_token: accessToken,

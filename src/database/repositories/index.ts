@@ -19,7 +19,7 @@ export {
   TrackArtistsRepository,
 };
 export const AdminRepositoryProvider: Provider[] = [AdminRepository];
-export const GlobalRepositoriesProvider: Provider[] = [
+export const CoreRepositoriesProvider: Provider[] = [
   UserRepository,
   GenresRepository,
   // ArtistsRepository,

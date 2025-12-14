@@ -1,14 +1,15 @@
-import {
-  Injectable,
-  CanActivate,
-  ExecutionContext,
-  UnauthorizedException,
-} from '@nestjs/common';
+import { Injectable, CanActivate, ExecutionContext } from '@nestjs/common';
 import jwt from 'jsonwebtoken';
 import { ConfigService } from '@nestjs/config';
 import { Request } from 'express';
 import { AdminRepository } from '@repositories';
 import { TokenService } from '@shared';
+import { LoggerUtil } from '@utils';
+import {
+  PermissionDeniedException,
+  TokenExpiredException,
+  TokenInvalidException,
+} from '@exceptions';
 
 type AppRole = 'admin' | 'manager' | 'mod' | 'guest';
 
@@ -20,6 +21,7 @@ interface JwtPayload extends jwt.JwtPayload {
 
 @Injectable()
 class JwtAuthGuard implements CanActivate {
+  private readonly logger = new LoggerUtil(JwtAuthGuard.name);
   constructor(
     private readonly configService: ConfigService,
     private readonly tokens: TokenService,
@@ -27,36 +29,62 @@ class JwtAuthGuard implements CanActivate {
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
+    const startTime = this.logger.startTiming();
+    this.logger.step(1, 'JwtAuthGuard triggered');
+
     const req = context.switchToHttp().getRequest<Request>();
     const res = context.switchToHttp().getResponse();
 
-    const header = req.headers['authorization'];
+    const header = req.headers.authorization;
     const refreshToken = req.headers['x-refresh-token'] || '';
+
+    console.log(refreshToken);
+    /** =========================
+    /*  VALIDATE TOKEN HEADER
+    /* ========================= */
+    this.logger.step(2, 'Validating access token', {
+      accessToken: !!header,
+    });
+
     if (!header || !header.startsWith('Bearer ')) {
-      throw new UnauthorizedException({
+      this.logger.validationError(
+        'authorization',
+        'Missing Or Malformed Bearer Token',
+      );
+      this.logger.auth('PERMISSION_DENIED', 'UNKNOWN', 'Bearer Token');
+
+      const duration = this.logger.endTiming(
+        startTime,
+        'JwtAuthGuard Failed (no access token)',
+      );
+      this.logger.performance('JwtAuthGuard', duration);
+      throw new TokenInvalidException({
         code: 'NO_TOKEN',
-        message: 'Missing Bearer token',
+        message: 'Missing Bearer Token',
       });
     }
-    const token = header.slice(7);
+    const accessToken = header.slice(7);
 
-    /** Check Token In Session */
-    if (!req.session || req.session.accessToken !== token) {
-      throw new UnauthorizedException({
-        code: 'SESSION_TOKEN_MISMATCH',
-        message: 'Access token does not match session',
-      });
-    }
-
-    /** Check Token Blacklist */
+    /** =========================
+    /*  BLACKLIST VALIDATION
+    /* ========================= */
+    this.logger.step(4, 'Checking blacklist');
     const isBlacklisted = await this.tokens.isTokenBlacklisted(
-      token,
+      accessToken,
       'accessToken',
     );
     if (isBlacklisted) {
-      throw new UnauthorizedException({
+      this.logger.auth('TOKEN_INVALID', 'UNKNOWN', 'Token Blacklisted');
+
+      const duration = this.logger.endTiming(
+        startTime,
+        'JwtAuthGuard failed (blacklisted)',
+      );
+      this.logger.performance('JwtAuthGuard', duration);
+
+      throw new TokenInvalidException({
         code: 'TOKEN_BLACKLISTED',
-        message: 'Access token is blacklisted',
+        message: 'Access Token Is Blacklisted',
       });
     }
 
@@ -64,13 +92,25 @@ class JwtAuthGuard implements CanActivate {
     if (!jwtSecret) throw new Error('JWT_SECRET_KEY missing');
 
     try {
-      const decoded = this.tokens.decodedAccessToken(token) as JwtPayload;
+      this.logger.step(5, 'Decoding access token');
+      const decoded = this.tokens.decodedAccessToken(accessToken) as JwtPayload;
 
+      this.logger.step(6, 'Fetching admin from database', {
+        adminId: decoded.id,
+      });
       const admin = await this.admins.findOne({ where: { id: decoded.id } });
       if (!admin) {
-        throw new UnauthorizedException({
-          code: 'USER_NOT_FOUND',
-          message: 'User not found',
+        this.logger.auth('PERMISSION_DENIED', decoded.id, 'User Not Found');
+
+        const duration = this.logger.endTiming(
+          startTime,
+          'JwtAuthGuard failed (admin not found)',
+        );
+        this.logger.performance('JwtAuthGuard', duration);
+
+        throw new PermissionDeniedException({
+          code: 'ADMIN_NOT_FOUND',
+          message: 'Admin Not Found',
         });
       }
       req.auth = {
@@ -79,49 +119,114 @@ class JwtAuthGuard implements CanActivate {
         roles: admin.roles,
         isSuperAdmin: admin.is_super_admin === true,
       };
+
+      this.logger.auth('LOGIN_SUCCESS', admin.email);
+      const duration = this.logger.endTiming(
+        startTime,
+        'JwtAuthGuard success (access token valid)',
+      );
+      this.logger.performance('JwtAuthGuard', duration);
       return true;
     } catch (err) {
+      /** =========================
+      /*  TOKEN EXPIRED CASE
+      /* ========================= */
+      if (!(err instanceof jwt.TokenExpiredError))
+        throw new TokenInvalidException({ code: 'INVALID_TOKEN' });
+
       if (err instanceof jwt.TokenExpiredError) {
+        this.logger.auth('TOKEN_EXPIRED', 'UNKNOWN');
         if (!refreshToken || typeof refreshToken !== 'string') {
-          throw new UnauthorizedException({
-            code: 'NO_REFRESH_TOKEN',
-            message: 'Refresh token mismatch, please login again.',
+          this.logger.validationError('refreshToken', 'Missing refresh token');
+
+          const duration = this.logger.endTiming(
+            startTime,
+            'Authorization failed (no refresh token)',
+          );
+          this.logger.performance('JwtAuthGuard', duration);
+
+          throw new TokenExpiredException({
+            code: 'ACCESS_TOKEN_EXPIRED',
+            message: 'Access token expired, please send refresh token',
           });
         }
 
-        /**  Check Refresh in blacklist */
+        /** =========================
+        /*  CHECK REFRESH TOKEN STATUS  
+        /* ========================= */
+        this.logger.step(7, 'Checking refresh token blacklist');
         const isRefreshBlacklisted = await this.tokens.isTokenBlacklisted(
           refreshToken,
           'refreshToken',
         );
         if (isRefreshBlacklisted) {
-          throw new UnauthorizedException({
+          this.logger.auth(
+            'TOKEN_INVALID',
+            'UNKNOWN',
+            'Refresh Token Blacklisted',
+          );
+
+          const duration = this.logger.endTiming(
+            startTime,
+            'Authorization failed (refresh blacklisted)',
+          );
+          this.logger.performance('JwtAuthGuard', duration);
+
+          throw new TokenInvalidException({
             code: 'REFRESH_TOKEN_BLACKLISTED',
             message: 'Refresh token is blacklisted, please login again.',
           });
         }
 
-        /** Check Access Token and Refresh Token in Redis */
+        /** =========================
+        /*  VALIDATE TOKEN PAIR IN REDIS 
+        /* ========================= */
+        this.logger.step(8, 'Fetching session token pair from Redis');
         const oldTokens = await this.tokens.getTokens(req.sessionID);
+        console.log('REFRESH SID:', req.sessionID);
         if (!oldTokens) {
-          throw new UnauthorizedException({
+          this.logger.auth(
+            'TOKEN_INVALID',
+            'UNKNOWN',
+            'Missing redis token pair',
+          );
+
+          const duration = this.logger.endTiming(
+            startTime,
+            'Authorization failed (no redis tokens)',
+          );
+          this.logger.performance('JwtAuthGuard', duration);
+
+          throw new TokenInvalidException({
             code: 'NO_SESSION_TOKENS',
-            message: 'No tokens in session, please login again.',
+            message: 'No Tokens In Redis Session, Please Login Again.',
           });
         }
 
         if (
-          oldTokens.accessToken !== token &&
+          oldTokens.accessToken !== accessToken ||
           oldTokens.refreshToken !== refreshToken
         ) {
-          throw new UnauthorizedException({
+          this.logger.auth('TOKEN_INVALID', 'UNKNOWN', 'Token Pair Mismatch');
+
+          const duration = this.logger.endTiming(
+            startTime,
+            'Authorization failed (pair mismatch)',
+          );
+          this.logger.performance('JwtAuthGuard', duration);
+
+          throw new TokenInvalidException({
             code: 'TOKEN_MISMATCH',
             message: 'Token pair mismatch, please login again.',
           });
         }
 
-        /** Issue new tokens */
-        const oldPayload = jwt.decode(token) as JwtPayload;
+        /** =========================
+        /*  ISSUE NEW TOKEN PAIR
+        /* ========================= */
+        this.logger.step(9, 'Issuing new token pair');
+
+        const oldPayload = jwt.decode(accessToken) as JwtPayload;
         const newAccessToken = this.tokens.createAccessToken({
           userId: oldPayload.userId,
           email: oldPayload.email,
@@ -131,11 +236,10 @@ class JwtAuthGuard implements CanActivate {
         const newRefreshToken = this.tokens.createRefreshToken();
 
         /** Save new token pair to Redis and update accessToken in Session */
-        req.session.accessToken = newAccessToken;
         await this.tokens.saveToken(
           req.sessionID,
-          newRefreshToken,
           newAccessToken,
+          newRefreshToken,
         );
 
         /** Set new token pair to header */
@@ -149,11 +253,31 @@ class JwtAuthGuard implements CanActivate {
           isSuperAdmin: oldPayload.isSuperAdmin === true,
         };
 
+        this.logger.operation('UPDATE', 'TokenPair', {
+          sessionID: req.sessionID,
+        });
+
+        const duration = this.logger.endTiming(
+          startTime,
+          'Authorization success (token refreshed)',
+        );
+        this.logger.performance('JwtAuthGuard', duration);
+
         return true;
       }
 
-      console.error('JWT validation error:', err);
-      throw new UnauthorizedException({
+      /** =========================
+      /*  INVALID TOKEN (OTHER)
+      /* ========================= */
+      this.logger.error('JWT decode failed', err);
+
+      const duration = this.logger.endTiming(
+        startTime,
+        'Authorization failed (invalid token)',
+      );
+      this.logger.performance('JwtAuthGuard', duration);
+
+      throw new TokenInvalidException({
         code: 'INVALID_TOKEN',
         message: 'Invalid or malformed token',
       });

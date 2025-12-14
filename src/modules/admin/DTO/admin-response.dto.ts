@@ -11,7 +11,7 @@ class AdminResponseDTO {
   phone?: string;
   language?: string;
   roles: string;
-  isSuperAdmin: boolean;
+  is_admin: boolean;
   is_deleted?: boolean;
   createdAt?: string;
   updatedAt?: string;
@@ -23,6 +23,6 @@ class AdminListResponseDTO {
   email: string;
   fullName?: string;
   roles: string;
-  isSuperAdmin: boolean;
+  is_admin: boolean;
 }
 export { AdminResponseDTO, AdminListResponseDTO };

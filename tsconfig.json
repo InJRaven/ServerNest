@@ -21,7 +21,8 @@
       "@interfaces": ["./src/common/interfaces"],
 
       "@core/*": ["./src/modules/core/*"],
-      "@modules/*": ["./src/modules/*"],
+      "@admin/*": ["./src/modules/admin/*"],
+      "@public/*": ["./src/modules/public/*"],
 
       "@shared": ["./src/shared"],
       "@DTO": ["./src/database/DTO"],

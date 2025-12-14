@@ -5,7 +5,7 @@ export class ResponseUtil {
     return {
       success: true,
       message,
-      data,
+      ...(data ?? {}),
     };
   }
 
@@ -13,7 +13,7 @@ export class ResponseUtil {
     return {
       success: true,
       message,
-      data,
+      ...(data ?? {}),
     };
   }
 

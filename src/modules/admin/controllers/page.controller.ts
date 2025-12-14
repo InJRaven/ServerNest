@@ -1,6 +1,6 @@
 import { Request } from 'express';
 import { JwtAuthGuard } from '@guards';
-import { PageService } from '@modules/server/services';
+import { PageService } from '@admin/services';
 import {
   Controller,
   Get,
