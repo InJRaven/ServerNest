@@ -260,10 +260,9 @@ class GenresService extends BaseService<GenresEntity> {
       this.logger.log('Fetching all genres');
       const genres = await this.repository.findAll();
       this.logger.operation('READ', 'Genres');
-      return ResponseUtil.success(
-        'Get Success',
-        this.mapper.toListResponseDTOList(genres),
-      );
+      return ResponseUtil.success('Get Success', {
+        genres: this.mapper.toListResponseDTOList(genres),
+      });
     } catch (error) {
       this.logger.error('Error fetching all genres', error as Error);
       if (error instanceof EntityNotFoundException) throw error;

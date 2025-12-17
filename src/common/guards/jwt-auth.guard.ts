@@ -6,6 +6,7 @@ import { AdminRepository } from '@repositories';
 import { TokenService } from '@shared';
 import { LoggerUtil } from '@utils';
 import {
+  InternalServerException,
   PermissionDeniedException,
   TokenExpiredException,
   TokenInvalidException,
@@ -33,12 +34,8 @@ class JwtAuthGuard implements CanActivate {
     this.logger.step(1, 'JwtAuthGuard triggered');
 
     const req = context.switchToHttp().getRequest<Request>();
-    const res = context.switchToHttp().getResponse();
 
     const header = req.headers.authorization;
-    const refreshToken = req.headers['x-refresh-token'] || '';
-
-    console.log(refreshToken);
     /** =========================
     /*  VALIDATE TOKEN HEADER
     /* ========================= */
@@ -129,158 +126,29 @@ class JwtAuthGuard implements CanActivate {
       return true;
     } catch (err) {
       /** =========================
-      /*  TOKEN EXPIRED CASE
-      /* ========================= */
-      if (!(err instanceof jwt.TokenExpiredError))
-        throw new TokenInvalidException({ code: 'INVALID_TOKEN' });
-
-      if (err instanceof jwt.TokenExpiredError) {
-        this.logger.auth('TOKEN_EXPIRED', 'UNKNOWN');
-        if (!refreshToken || typeof refreshToken !== 'string') {
-          this.logger.validationError('refreshToken', 'Missing refresh token');
-
-          const duration = this.logger.endTiming(
-            startTime,
-            'Authorization failed (no refresh token)',
-          );
-          this.logger.performance('JwtAuthGuard', duration);
-
-          throw new TokenExpiredException({
-            code: 'ACCESS_TOKEN_EXPIRED',
-            message: 'Access token expired, please send refresh token',
-          });
-        }
-
-        /** =========================
-        /*  CHECK REFRESH TOKEN STATUS  
-        /* ========================= */
-        this.logger.step(7, 'Checking refresh token blacklist');
-        const isRefreshBlacklisted = await this.tokens.isTokenBlacklisted(
-          refreshToken,
-          'refreshToken',
-        );
-        if (isRefreshBlacklisted) {
-          this.logger.auth(
-            'TOKEN_INVALID',
-            'UNKNOWN',
-            'Refresh Token Blacklisted',
-          );
-
-          const duration = this.logger.endTiming(
-            startTime,
-            'Authorization failed (refresh blacklisted)',
-          );
-          this.logger.performance('JwtAuthGuard', duration);
-
-          throw new TokenInvalidException({
-            code: 'REFRESH_TOKEN_BLACKLISTED',
-            message: 'Refresh token is blacklisted, please login again.',
-          });
-        }
-
-        /** =========================
-        /*  VALIDATE TOKEN PAIR IN REDIS 
-        /* ========================= */
-        this.logger.step(8, 'Fetching session token pair from Redis');
-        const oldTokens = await this.tokens.getTokens(req.sessionID);
-        console.log('REFRESH SID:', req.sessionID);
-        if (!oldTokens) {
-          this.logger.auth(
-            'TOKEN_INVALID',
-            'UNKNOWN',
-            'Missing redis token pair',
-          );
-
-          const duration = this.logger.endTiming(
-            startTime,
-            'Authorization failed (no redis tokens)',
-          );
-          this.logger.performance('JwtAuthGuard', duration);
-
-          throw new TokenInvalidException({
-            code: 'NO_SESSION_TOKENS',
-            message: 'No Tokens In Redis Session, Please Login Again.',
-          });
-        }
-
-        if (
-          oldTokens.accessToken !== accessToken ||
-          oldTokens.refreshToken !== refreshToken
-        ) {
-          this.logger.auth('TOKEN_INVALID', 'UNKNOWN', 'Token Pair Mismatch');
-
-          const duration = this.logger.endTiming(
-            startTime,
-            'Authorization failed (pair mismatch)',
-          );
-          this.logger.performance('JwtAuthGuard', duration);
-
-          throw new TokenInvalidException({
-            code: 'TOKEN_MISMATCH',
-            message: 'Token pair mismatch, please login again.',
-          });
-        }
-
-        /** =========================
-        /*  ISSUE NEW TOKEN PAIR
-        /* ========================= */
-        this.logger.step(9, 'Issuing new token pair');
-
-        const oldPayload = jwt.decode(accessToken) as JwtPayload;
-        const newAccessToken = this.tokens.createAccessToken({
-          userId: oldPayload.userId,
-          email: oldPayload.email,
-          role: oldPayload.role,
-          isSuperAdmin: oldPayload.isSuperAdmin,
-        });
-        const newRefreshToken = this.tokens.createRefreshToken();
-
-        /** Save new token pair to Redis and update accessToken in Session */
-        await this.tokens.saveToken(
-          req.sessionID,
-          newAccessToken,
-          newRefreshToken,
-        );
-
-        /** Set new token pair to header */
-        res.setHeader('authorization', `Bearer ${newAccessToken}`);
-        res.setHeader('x-refresh-token', newRefreshToken);
-
-        req.auth = {
-          id: oldPayload.userId,
-          email: oldPayload.email,
-          roles: oldPayload.role,
-          isSuperAdmin: oldPayload.isSuperAdmin === true,
-        };
-
-        this.logger.operation('UPDATE', 'TokenPair', {
-          sessionID: req.sessionID,
-        });
-
-        const duration = this.logger.endTiming(
-          startTime,
-          'Authorization success (token refreshed)',
-        );
-        this.logger.performance('JwtAuthGuard', duration);
-
-        return true;
-      }
-
-      /** =========================
       /*  INVALID TOKEN (OTHER)
       /* ========================= */
-      this.logger.error('JWT decode failed', err);
 
-      const duration = this.logger.endTiming(
-        startTime,
-        'Authorization failed (invalid token)',
-      );
-      this.logger.performance('JwtAuthGuard', duration);
+      /** =========================
+      /*  TOKEN EXPIRED CASE
+      /* ========================= */
+      if (err instanceof jwt.TokenExpiredError) {
+        this.logger.error('Access Token Expired', err);
+        throw new TokenExpiredException({
+          code: 'ACCESS_TOKEN_EXPIRED',
+          message: 'Access token expired, please send refresh token',
+        });
+      }
 
-      throw new TokenInvalidException({
-        code: 'INVALID_TOKEN',
-        message: 'Invalid or malformed token',
-      });
+      if (err instanceof TokenInvalidException) {
+        this.logger.error('JWT decode failed', err);
+        throw new TokenInvalidException({
+          code: 'INVALID_TOKEN',
+          message: 'Invalid or malformed token',
+        });
+      }
+
+      throw new InternalServerException('JwtAuth Failded', err, 'JwtAuthGuard');
     }
   }
 }

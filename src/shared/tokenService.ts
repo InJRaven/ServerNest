@@ -17,7 +17,7 @@ class TokenService {
     const jti = randomBytes(16).toString('hex');
     return jwt.sign(payload, jwtSecret, {
       algorithm: 'HS256',
-      expiresIn: '30s',
+      expiresIn: '30h',
       audience: 'web',
       jwtid: jti,
     });
