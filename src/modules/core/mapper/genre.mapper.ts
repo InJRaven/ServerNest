@@ -11,7 +11,7 @@ class GenreMapper {
       id: entity.id,
       title: entity.title,
       slug: entity.slug,
-      description: entity.content,
+      description: entity.description,
       coverUrl: entity.cover_url,
       icon: {
         type: entity.icon_type,
@@ -38,11 +38,13 @@ class GenreMapper {
       id: entity.id,
       title: entity.title,
       slug: entity.slug,
+      description: entity.description,
       coverUrl: entity.cover_url,
       color: entity.color,
       trackCount: StringUtil.formatNumber(entity.track_count),
       albumCount: StringUtil.formatNumber(entity.album_count),
       popularity: entity.popularity,
+      deleted: entity.is_deleted,
     };
   }
 

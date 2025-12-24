@@ -47,7 +47,12 @@ class GenresService extends BaseService<GenresEntity> {
       });
       if (exists) {
         this.logger.duplicateError('Genres', 'title', data.title);
-        throw new EntityAlreadyExistsException('Genres', 'title', data.title);
+        throw new EntityAlreadyExistsException(
+          'Genres',
+          'title',
+          data.title,
+          'TITLE_ALREADY_EXISTS',
+        );
       }
 
       this.logger.step(2, 'Create id and slug');
@@ -65,17 +70,22 @@ class GenresService extends BaseService<GenresEntity> {
         'create genre completed',
       );
       this.logger.performance('createGenre', duration);
-      return ResponseUtil.created('Genre created successfully', mapData);
+      return ResponseUtil.created('Genre created successfully', {
+        genre: mapData,
+      });
     } catch (error) {
       this.logger.error('Failed to create genres batch', error as Error);
-      if (error instanceof InvalidOperationException) {
+      if (
+        error instanceof InvalidOperationException ||
+        error instanceof EntityAlreadyExistsException
+      ) {
         throw error;
       }
 
       throw new InternalServerException(
         'Failed to create genres batch',
         error as Error,
-        'GenresService.createGenres',
+        'GenresService.createGenre',
       );
     }
   }
@@ -93,6 +103,10 @@ class GenresService extends BaseService<GenresEntity> {
         where: { id, ...(options?.where ?? {}) },
       });
 
+      if (!exists) {
+        this.logger.notFound('Genres', 'id', id);
+        throw new EntityNotFoundException('Genre', id, 'NOT_FOUND');
+      }
       const isTitleChanged = exists.title !== data.title;
       this.logger.step(
         3,
@@ -105,16 +119,16 @@ class GenresService extends BaseService<GenresEntity> {
         ? { ...data, slug: StringUtil.slugify(data.title) }
         : data;
 
-      this.logger.step(4, 'Updating genre', { id });
-      const updatedGenre = await this.repository.update(payload);
+      this.logger.step(4, 'Merge and Save genre', { id });
+      const updatedGenre = await this.repository.mergeAndSave(exists, payload);
 
       this.logger.operation('UPDATE', 'Genres', { id });
-      const res = this.mapper.toResponseDTO(updatedGenre);
+      const mapData = this.mapper.toResponseDTO(updatedGenre);
 
       const duration = this.logger.endTiming(startTime, 'update completed');
       this.logger.performance('updateGenre', duration);
 
-      return ResponseUtil.success('Genre updated successfully', res);
+      return ResponseUtil.success('Genre updated successfully', mapData);
     } catch (error) {
       this.logger.error('Failed to update genre', error as Error);
       if (error instanceof EntityNotFoundException) {
@@ -255,13 +269,33 @@ class GenresService extends BaseService<GenresEntity> {
       );
     }
   }
-  async getAllGenres(): Promise<IApiResponse> {
+  async getAllGenres(
+    options?: FindManyOptions<GenresEntity>,
+  ): Promise<IApiResponse> {
+    const startTime = this.logger.startTiming();
     try {
-      this.logger.log('Fetching all genres');
-      const genres = await this.repository.findAll();
-      this.logger.operation('READ', 'Genres');
+      this.logger.step(1, 'Start retrieving genre list');
+      const genres = await this.repository.findAll(options);
+
+      this.logger.step(2, 'Genre records retrieved from database', {
+        totalRecords: genres.length,
+      });
+
+      const mappedGenres = this.mapper.toListResponseDTOList(genres);
+      this.logger.transform(
+        'GenresEntity[]',
+        'GenreListResponseDTO[]',
+        genres.length,
+      );
+
+      this.logger.operation(
+        'READ',
+        'Genres',
+        { totalRecords: genres.length },
+        this.logger.endTiming(startTime, 'Retrieve genre list completed'),
+      );
       return ResponseUtil.success('Get Success', {
-        genres: this.mapper.toListResponseDTOList(genres),
+        genres: mappedGenres,
       });
     } catch (error) {
       this.logger.error('Error fetching all genres', error as Error);

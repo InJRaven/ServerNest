@@ -13,11 +13,13 @@ import {
   NotFoundException,
   UnauthorizedException,
   Req,
+  HttpException,
 } from '@nestjs/common';
 import { GenresService } from '@core/services';
 import { GenresDTO } from '@DTO';
-import { JwtAuthGuard } from '@guards';
+import { AuthorizationGuard, JwtAuthGuard } from '@guards';
 import { Request } from 'express';
+import { Auth } from '@decorators';
 
 @Controller('genres')
 export class GenresController {
@@ -26,11 +28,14 @@ export class GenresController {
   @Get()
   @HttpCode(HttpStatus.OK)
   async getAllGenres() {
-    return await this.services.getAllGenres();
+    // const auth = req.auth;
+
+    return await this.services.getAllGenres({ where: { is_deleted: false } });
   }
 
   @Post()
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, AuthorizationGuard)
+  @Auth({ roles: ['admin', 'manager', 'mod'] })
   @HttpCode(HttpStatus.CREATED)
   async createGenre(@Body() body: GenresDTO, @Req() req: Request) {
     try {
@@ -42,23 +47,28 @@ export class GenresController {
     } catch (error) {
       if (
         error instanceof UnauthorizedException ||
-        error instanceof NotFoundException
+        error instanceof NotFoundException ||
+        error instanceof HttpException
       ) {
         throw error;
       }
-      throw new InternalServerErrorException({ code: 'GET_HELLO_FAILED' });
+      throw new InternalServerErrorException({ code: 'CREATE_GENRE_FAILED' });
     }
   }
 
+  @UseGuards(JwtAuthGuard, AuthorizationGuard)
+  @Auth({ roles: ['admin', 'manager', 'mod'] })
   @Put(':id')
   @HttpCode(HttpStatus.OK)
   async updateGenre(@Param('id') id: string, @Body() data: GenresDTO) {
     return await this.services.updateGenre(id, data);
   }
 
+  @UseGuards(JwtAuthGuard, AuthorizationGuard)
+  @Auth({ roles: ['admin', 'manager', 'mod'] })
   @Delete(':id')
   @HttpCode(HttpStatus.OK)
-  async deleteGenre(@Param('id') id: string) {
-    return await this.services.hardDelete(id);
+  async softDeleteGenre(@Param('id') id: string) {
+    return await this.services.softDelete(id);
   }
 }

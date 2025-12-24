@@ -24,11 +24,13 @@ class GenreListResponseDTO {
   id: string;
   title: string;
   slug: string;
+  description?: string;
   coverUrl?: string;
   color?: string;
   trackCount: string;
   albumCount: string;
   popularity: number;
+  deleted: boolean;
 }
 
 export { GenreResponseDTO, GenreListResponseDTO };

@@ -87,6 +87,17 @@ abstract class BaseRepository<Entity extends { id: string }>
     return await this.repository.save(data);
   }
 
+  async save(data: DeepPartial<Entity>): Promise<Entity> {
+    return this.repository.save(data);
+  }
+
+  async mergeAndSave(
+    entity: Entity,
+    data: DeepPartial<Entity>,
+  ): Promise<Entity> {
+    const merged = this.repository.merge(entity, data);
+    return this.repository.save(merged);
+  }
   async updateMany(
     where: FindOptionsWhere<Entity>,
     data: DeepPartial<Entity>,

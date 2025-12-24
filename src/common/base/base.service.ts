@@ -71,7 +71,7 @@ abstract class BaseService<Entity extends { id: string; is_deleted: boolean }> {
       } as FindManyOptions<Entity>);
       if (!exists) {
         this.logger.notFound(this.Entity, 'id', id);
-        throw new EntityNotFoundException(this.Entity, id);
+        throw new EntityNotFoundException(this.Entity, id, 'NOT_FOUND');
       }
 
       this.logger.step(2, 'Calling repository.softDelete');
@@ -86,6 +86,7 @@ abstract class BaseService<Entity extends { id: string; is_deleted: boolean }> {
       return ResponseUtil.noContent(`${this.Entity} deleted successfully`);
     } catch (error) {
       this.logger.error(`Failed to soft delete ${this.Entity}`, error as Error);
+      if (error instanceof EntityNotFoundException) throw error;
       throw new InternalServerException(
         `Failed to soft delete ${this.Entity}`,
         error as Error,

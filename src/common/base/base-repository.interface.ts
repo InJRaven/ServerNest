@@ -13,6 +13,8 @@ interface IBaseRepository<Entity> {
     data: DeepPartial<Entity>,
   ): Promise<number>;
 
+  save(data: DeepPartial<Entity>): Promise<Entity>;
+  mergeAndSave(entity: Entity, data: DeepPartial<Entity>): Promise<Entity>;
   /* ---------------------------------------------------------
    * SOFT/HARD DELETE - RESTORE
    * --------------------------------------------------------- */
