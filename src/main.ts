@@ -14,7 +14,18 @@ async function bootstrap() {
   server.setGlobalPrefix('api');
 
   server.enableCors({
-    origin: 'http://localhost:5173',
+    origin: (origin, callback) => {
+      const allowedOrigins = process.env.CORS_ORIGIN?.split(',') ?? [];
+
+      // allow non-browser requests (Postman, server-to-server)
+      if (!origin) return callback(null, true);
+
+      if (allowedOrigins.includes(origin)) {
+        return callback(null, true);
+      }
+
+      return callback(new Error('Not allowed by CORS'), false);
+    },
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
     allowedHeaders: ['Content-Type', 'Authorization', 'x-refresh-token'],
