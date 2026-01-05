@@ -32,7 +32,9 @@ async function bootstrap() {
   // Check Database and Schema
   await server.get(Database).checkConnection();
   await server.get(Database).checkSchema();
-  await server.listen(process.env.PORT ?? 3000);
+
+  const port = process.env.PORT || 3000;
+  await server.listen(port);
 
   console.log('🚀 HTTP Backend: http://localhost:3000');
 }
