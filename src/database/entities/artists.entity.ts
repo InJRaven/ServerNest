@@ -10,6 +10,7 @@ import {
 
 import { AlbumsEntity } from './albums.entity';
 import { TrackArtistsEntity } from './track-artists.entity';
+import { ArtistRolesEntity } from './artists-roles.entity';
 @Entity({ name: 'Artists' })
 @Index(['popularity', 'monthly_listeners'])
 @Index(['title', 'slug'])
@@ -94,10 +95,13 @@ class ArtistsEntity {
   @UpdateDateColumn()
   updatedAt: Date;
 
+  @OneToMany(() => ArtistRolesEntity, (artistRole) => artistRole.artist)
+  artist_roles: ArtistRolesEntity[];
+
   @OneToMany(() => AlbumsEntity, (albums) => albums.artist)
   albums: AlbumsEntity[];
 
-  @OneToMany(() => TrackArtistsEntity, (trackArtists) => trackArtists.artist_id)
+  @OneToMany(() => TrackArtistsEntity, (trackArtists) => trackArtists.artist)
   track_artists: TrackArtistsEntity[];
 }
 export { ArtistsEntity };

@@ -21,13 +21,26 @@
       "@interfaces": ["./src/common/interfaces"],
 
       "@core/*": ["./src/modules/core/*"],
-      "@admin/*": ["./src/modules/admin/*"],
+      // "@admin/*": ["./src/modules/admin/*"],
       "@public/*": ["./src/modules/public/*"],
 
       "@shared": ["./src/shared"],
       "@DTO": ["./src/database/DTO"],
       "@entities": ["./src/database/entities"],
-      "@repositories": ["./src/database/repositories"]
+      "@repositories": ["./src/database/repositories"],
+
+      "@AdminEntities": ["./src/database/admin/entities"],
+      "@AdminRepositories": ["./src/database/admin/repositories"],
+      "@AdminDTOs": ["./src/database/admin/DTO"],
+      "@AdminMapper": ["./src/modules/admin/mapper"],
+      "@AdminServices": ["./src/modules/admin/services"],
+      "@AdminControllers": ["./src/modules/admin/controllers"],
+
+      "@CoreEntities": ["./src/database/core/entities"],
+      "@CoreRepositories": ["./src/database/core/repositories"],
+      "@CoreDTOs": ["./src/database/core/DTO"],
+      "@CoreServices": ["./src/modules/core/services"],
+      "@CoreMapper": ["./src/modules/core/mapper"]
     },
     "incremental": true,
     "skipLibCheck": true,

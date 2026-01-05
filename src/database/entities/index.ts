@@ -2,6 +2,8 @@ import { AdminEntity } from './admin.entity';
 import { UserEntity } from './user.entity';
 import { GenresEntity } from './genres.entity';
 import { ArtistsEntity } from './artists.entity';
+import { ArRoleEntity } from './arRole.entity';
+import { ArtistRolesEntity } from './artists-roles.entity';
 import { AlbumsEntity } from './albums.entity';
 import { TracksEntity } from './tracks.entity';
 import { TrackGenresEntity } from './track-genres.entity';
@@ -12,6 +14,8 @@ export {
   UserEntity,
   GenresEntity,
   ArtistsEntity,
+  ArRoleEntity,
+  ArtistRolesEntity,
   AlbumsEntity,
   TracksEntity,
   TrackGenresEntity,
@@ -23,6 +27,8 @@ export const CoreEntities = [
   UserEntity,
   GenresEntity,
   ArtistsEntity,
+  ArRoleEntity,
+  ArtistRolesEntity,
   AlbumsEntity,
   TracksEntity,
   TrackGenresEntity,

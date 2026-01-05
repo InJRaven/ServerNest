@@ -1,26 +1,27 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { GuardsProvider } from '@guards';
-import { AdminRepositoryProvider } from '@repositories';
-import { AdminEntitires } from '@entities';
 import { ConfigServerModule } from '../config.module';
-import { CoreServiceProvier } from '@core/services';
-import { AdminServiceProvider } from '@admin/services';
-import { AdminMappers } from '@admin/mapper';
-import { AdminControllers } from '@admin/controllers';
-import { CoreMapper } from '@core/mapper';
+import { AdminServiceProvider } from '@AdminServices';
+import { AdminMappers } from '@AdminMapper';
+import { AdminControllers } from '@AdminControllers';
+
+import { AdminEntities } from '@AdminEntities';
+import { AdminRepositories } from '@AdminRepositories';
+import { CoreServices } from '@CoreServices';
+import { CoreMappers } from '@CoreMapper';
 
 @Module({
-  imports: [ConfigServerModule, TypeOrmModule.forFeature(AdminEntitires)],
+  imports: [ConfigServerModule, TypeOrmModule.forFeature(AdminEntities)],
   providers: [
-    ...AdminRepositoryProvider,
+    ...AdminRepositories,
     ...GuardsProvider,
-    ...CoreServiceProvier,
+    ...CoreServices,
     ...AdminServiceProvider,
-    ...CoreMapper,
+    ...CoreMappers,
     ...AdminMappers,
   ],
   controllers: AdminControllers,
-  exports: [...AdminRepositoryProvider, ...AdminServiceProvider],
+  exports: [...AdminRepositories, ...AdminServiceProvider],
 })
 export class AdminModule {}

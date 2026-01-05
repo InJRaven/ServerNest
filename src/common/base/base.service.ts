@@ -8,7 +8,7 @@ import { BaseRepository } from './base.repository';
 import { LoggerUtil, ResponseUtil, SlugEncoderUtil } from '@utils';
 import { FindManyOptions } from 'typeorm';
 import { v4 as uuidv4 } from 'uuid';
-abstract class BaseService<Entity extends { id: string; is_deleted: boolean }> {
+abstract class BaseService<Entity extends { id: string; isDeleted: boolean }> {
   protected readonly logger: LoggerUtil;
   constructor(
     protected readonly repository: BaseRepository<Entity>,
@@ -67,7 +67,7 @@ abstract class BaseService<Entity extends { id: string; is_deleted: boolean }> {
     this.logger.step(1, `Validating ${this.Entity} exists`, { id });
     try {
       const exists = await this.repository.exists({
-        where: { id, is_deleted: false },
+        where: { id, isDeleted: false },
       } as FindManyOptions<Entity>);
       if (!exists) {
         this.logger.notFound(this.Entity, 'id', id);
@@ -100,7 +100,7 @@ abstract class BaseService<Entity extends { id: string; is_deleted: boolean }> {
     this.logger.step(1, `Validating ${this.Entity} exists`, { id });
     try {
       const exists = await this.repository.exists({
-        where: { id, is_deleted: false },
+        where: { id, isDeleted: false },
       } as FindManyOptions<Entity>);
       if (!exists) {
         this.logger.notFound(this.Entity, 'id', id);
@@ -133,7 +133,7 @@ abstract class BaseService<Entity extends { id: string; is_deleted: boolean }> {
     try {
       this.logger.step(2, `Validating ${this.Entity} exists`, id);
       const exists = await this.repository.exists({
-        where: { id, is_deleted: true },
+        where: { id, isDeleted: true },
       } as FindManyOptions<Entity>);
       if (!exists) {
         this.logger.notFound(this.Entity, 'id', id);

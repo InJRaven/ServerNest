@@ -83,28 +83,25 @@ abstract class BaseRepository<Entity extends { id: string }>
   /* ---------------------------------------------------------
    * ADMIN METHOD
    * --------------------------------------------------------- */
-  async update(data: DeepPartial<Entity>): Promise<Entity> {
-    return await this.repository.save(data);
-  }
+  // async update(data: DeepPartial<Entity>): Promise<Entity> {
+  //   return await this.repository.save(data);
+  // }
 
   async save(data: DeepPartial<Entity>): Promise<Entity> {
     return this.repository.save(data);
   }
 
-  async mergeAndSave(
-    entity: Entity,
-    data: DeepPartial<Entity>,
-  ): Promise<Entity> {
+  async merge(entity: Entity, data: DeepPartial<Entity>): Promise<Entity> {
     const merged = this.repository.merge(entity, data);
     return this.repository.save(merged);
   }
-  async updateMany(
-    where: FindOptionsWhere<Entity>,
-    data: DeepPartial<Entity>,
-  ): Promise<number> {
-    const result = await this.repository.update(where, data as any);
-    return result.affected || 0;
-  }
+  // async updateMany(
+  //   where: FindOptionsWhere<Entity>,
+  //   data: DeepPartial<Entity>,
+  // ): Promise<number> {
+  //   const result = await this.repository.update(where, data as any);
+  //   return result.affected || 0;
+  // }
 
   async hardDelete(id: string): Promise<boolean> {
     const result = await this.repository.delete(id);

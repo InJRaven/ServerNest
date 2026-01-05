@@ -22,7 +22,7 @@ export const AdminRepositoryProvider: Provider[] = [AdminRepository];
 export const CoreRepositoriesProvider: Provider[] = [
   UserRepository,
   GenresRepository,
-  // ArtistsRepository,
+  ArtistsRepository,
   // AlbumsRepository,
   // TrackRepository,
   // TrackGenresRepository,

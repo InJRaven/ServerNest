@@ -2,7 +2,7 @@ import { Injectable, CanActivate, ExecutionContext } from '@nestjs/common';
 import jwt from 'jsonwebtoken';
 import { ConfigService } from '@nestjs/config';
 import { Request } from 'express';
-import { AdminRepository } from '@repositories';
+import { AdminRepository } from '@AdminRepositories';
 import { TokenService } from '@shared';
 import { LoggerUtil } from '@utils';
 import {
@@ -11,8 +11,7 @@ import {
   TokenExpiredException,
   TokenInvalidException,
 } from '@exceptions';
-
-type AppRole = 'admin' | 'manager' | 'mod' | 'guest';
+import { AppRole } from '@decorators';
 
 interface JwtPayload extends jwt.JwtPayload {
   userId: string;
@@ -95,7 +94,14 @@ class JwtAuthGuard implements CanActivate {
       this.logger.step(6, 'Fetching admin from database', {
         adminId: decoded.id,
       });
-      const admin = await this.admins.findOne({ where: { id: decoded.id } });
+      const admin = await this.admins.findOne({
+        where: { id: decoded.id },
+        relations: {
+          roleAssignments: {
+            role: true,
+          },
+        },
+      });
       if (!admin) {
         this.logger.auth('PERMISSION_DENIED', decoded.id, 'User Not Found');
 
@@ -110,11 +116,17 @@ class JwtAuthGuard implements CanActivate {
           message: 'Admin Not Found',
         });
       }
-      req.auth = {
+      const roles =
+        admin.roleAssignments?.filter((a) => a.isActive && !a.revokedAt) || [];
+
+      const role = roles.map((a) => a.role.name);
+      const isSuperAdmin = roles.some((a) => a.role.isSuperAdmin);
+      req.user = {
         id: admin.id,
+        username: admin.username,
         email: admin.email,
-        roles: admin.roles,
-        isSuperAdmin: admin.is_super_admin === true,
+        role: role,
+        isSuperAdmin: isSuperAdmin,
       };
 
       this.logger.auth('LOGIN_SUCCESS', admin.email);

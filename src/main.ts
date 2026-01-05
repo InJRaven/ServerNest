@@ -2,7 +2,7 @@ import { NestFactory } from '@nestjs/core';
 import cookieParser from 'cookie-parser';
 import express from 'express';
 import { Session, Database } from '@config';
-import { AdminModule } from '@admin/admin.module';
+import { AdminModule } from './modules/admin/admin.module';
 
 async function bootstrap() {
   const server = await NestFactory.create(AdminModule);

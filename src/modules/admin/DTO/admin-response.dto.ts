@@ -5,14 +5,14 @@ class AdminResponseDTO {
   firstName?: string;
   lastName?: string;
   fullName?: string;
-  emailVerified: boolean;
+  verified: boolean;
   occupation?: string;
   companyName?: string;
   phone?: string;
   language?: string;
-  roles: string;
-  is_admin: boolean;
-  is_deleted?: boolean;
+  role: string;
+  isSuperAdmin: boolean;
+  isDeleted?: boolean;
   createdAt?: string;
   updatedAt?: string;
 }
@@ -22,7 +22,7 @@ class AdminListResponseDTO {
   username: string;
   email: string;
   fullName?: string;
-  roles: string;
-  is_admin: boolean;
+  role: string;
+  isSuperAdmin: boolean;
 }
 export { AdminResponseDTO, AdminListResponseDTO };

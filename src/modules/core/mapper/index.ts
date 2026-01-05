@@ -5,4 +5,4 @@ import { AlbumMapper } from './album.mapper';
 
 export { GenreMapper, ArtistMapper, TrackMapper, AlbumMapper };
 
-export const CoreMapper = [GenreMapper, ArtistMapper, TrackMapper];
+export const CoreMappers = [GenreMapper];

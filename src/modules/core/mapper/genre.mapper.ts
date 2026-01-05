@@ -1,31 +1,33 @@
-import { GenresEntity } from '@entities';
 import { GenreListResponseDTO, GenreResponseDTO } from '@core/DTO';
-import { StringUtil } from '@utils';
+// import { StringUtil } from '@utils';
+import { Genre } from '@CoreEntities';
 
 class GenreMapper {
   /**
    * Entity → Full Response DTO
    */
-  toResponseDTO(entity: GenresEntity): GenreResponseDTO {
+  toResponseDTO(entity: Genre): GenreResponseDTO {
     return {
       id: entity.id,
-      title: entity.title,
+      identify: entity.identify,
+      name: entity.name,
       slug: entity.slug,
       description: entity.description,
-      coverUrl: entity.cover_url,
-      icon: {
-        type: entity.icon_type,
-        value: entity.icon_value,
-      },
-      color: entity.color,
-      popularity: entity.popularity,
+      coverUrl: entity.coverUrl,
+      // icon: {
+      //   type: entity.icon_type,
+      //   value: entity.icon_value,
+      // },
+      // color: entity.color,
+      popularity: 0,
       stats: {
-        trackCount: StringUtil.formatNumber(entity.track_count),
-        albumCount: StringUtil.formatNumber(entity.album_count),
+        trackCount: entity.trackGenres?.length.toString() || '0',
+        albumCount: entity.albumGenres?.length.toString() || '0',
       },
-      relatedGenres: entity.related_genres,
-      tags: entity.tags,
-      isActive: entity.is_active,
+      // relatedGenres: entity.related_genres,
+      // tags: entity.tags,
+      // isActive: entity.is_active,
+      deleted: entity.isDeleted,
       createdAt: entity.createdAt.toISOString(),
     };
   }
@@ -33,25 +35,27 @@ class GenreMapper {
   /**
    * Entity → List Response DTO
    */
-  toListResponseDto(entity: GenresEntity): GenreListResponseDTO {
+  toListResponseDto(entity: Genre): GenreListResponseDTO {
     return {
       id: entity.id,
-      title: entity.title,
+      identify: entity.identify,
+      name: entity.name,
       slug: entity.slug,
       description: entity.description,
-      coverUrl: entity.cover_url,
-      color: entity.color,
-      trackCount: StringUtil.formatNumber(entity.track_count),
-      albumCount: StringUtil.formatNumber(entity.album_count),
-      popularity: entity.popularity,
-      deleted: entity.is_deleted,
+      coverUrl: entity.coverUrl,
+      // color: entity.color,
+      trackCount: entity.trackGenres?.length.toString() || '0',
+      albumCount: entity.albumGenres?.length.toString() || '0',
+      popularity: 0,
+      deleted: entity.isDeleted,
+      createdAt: entity.createdAt.toISOString(),
     };
   }
 
   /**
    * Entity[] → List Response DTO[]
    */
-  toListResponseDTOList(entities: GenresEntity[]): GenreListResponseDTO[] {
+  toListResponseDTOList(entities: Genre[]): GenreListResponseDTO[] {
     return entities.map((entity) => this.toListResponseDto(entity));
   }
 }

@@ -1,6 +1,12 @@
 import { SetMetadata } from '@nestjs/common';
 
-type AppRole = 'admin' | 'manager' | 'mod' | 'guest';
+type AppRole =
+  | 'System Admin'
+  | 'Admin'
+  | 'Analyst'
+  | 'Manager'
+  | 'Moderator'
+  | 'Guest';
 interface AuthRequirement {
   roles?: AppRole[];
   superAdmin?: boolean;

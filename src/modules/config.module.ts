@@ -2,9 +2,10 @@ import { Module, Global } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { RedisConfig, Session, TypeORMConfig, Database } from '@config';
-import { CoreEntities } from '@entities';
-import { CoreRepositoriesProvider } from '@repositories';
 import { EntityVerifier } from '@shared';
+
+import { CoreEntities } from '@CoreEntities';
+import { CoreRepositories } from '@CoreRepositories';
 
 @Global()
 @Module({
@@ -27,8 +28,9 @@ import { EntityVerifier } from '@shared';
     RedisConfig,
     Database,
     EntityVerifier,
-    ...CoreRepositoriesProvider,
+    ...CoreRepositories,
   ],
-  exports: [Session, RedisConfig, Database, ...CoreRepositoriesProvider],
+  exports: [Session, RedisConfig, Database, ...CoreRepositories],
+  // exports: [Session, RedisConfig, Database, ...CoreRepositories],
 })
 export class ConfigServerModule {}

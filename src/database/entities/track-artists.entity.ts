@@ -2,12 +2,12 @@ import { ArtistsEntity } from './artists.entity';
 import { TracksEntity } from './tracks.entity';
 import {
   Entity,
-  Column,
   CreateDateColumn,
   UpdateDateColumn,
   ManyToOne,
   JoinColumn,
   PrimaryColumn,
+  Column,
 } from 'typeorm';
 
 @Entity({ name: 'TrackArtists' })
@@ -18,16 +18,11 @@ class TrackArtistsEntity {
   @PrimaryColumn('uuid')
   artist_id: string;
 
-  @Column({
-    type: 'enum',
-    enum: ['main', 'featured', 'composer', 'producer'],
-    default: 'main',
-    nullable: true,
-  })
-  role: 'main' | 'featured' | 'composer' | 'producer';
-
   @CreateDateColumn()
   createdAt: Date;
+
+  @Column({ nullable: false })
+  role: string;
 
   @UpdateDateColumn()
   updatedAt: Date;

@@ -7,14 +7,14 @@ interface IBaseRepository<Entity> {
   create(data: DeepPartial<Entity>): Promise<Entity>;
   createMany(data: DeepPartial<Entity>[]): Promise<Entity[]>;
 
-  update(data: DeepPartial<Entity>): Promise<Entity>;
-  updateMany(
-    where: FindOptionsWhere<Entity>,
-    data: DeepPartial<Entity>,
-  ): Promise<number>;
+  // update(data: DeepPartial<Entity>): Promise<Entity>;
+  // updateMany(
+  //   where: FindOptionsWhere<Entity>,
+  //   data: DeepPartial<Entity>,
+  // ): Promise<number>;
 
   save(data: DeepPartial<Entity>): Promise<Entity>;
-  mergeAndSave(entity: Entity, data: DeepPartial<Entity>): Promise<Entity>;
+  merge(entity: Entity, data: DeepPartial<Entity>): Promise<Entity>;
   /* ---------------------------------------------------------
    * SOFT/HARD DELETE - RESTORE
    * --------------------------------------------------------- */

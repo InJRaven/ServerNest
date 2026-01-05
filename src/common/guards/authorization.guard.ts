@@ -31,12 +31,12 @@ class AuthorizationGuard implements CanActivate {
     }
 
     const req = context.switchToHttp().getRequest();
-    const admin = req.auth;
+    const admin = req.user;
 
     if (!admin) {
       this.logger.auth('PERMISSION_DENIED', 'UNKNOWN_USER');
       this.logger.validationError('auth', 'No Authenticated User Found');
-      this.logger.error('Authorization Failed: req.auth Is Undefined');
+      this.logger.error('Authorization Failed: req.user Is Undefined');
 
       const duration = this.logger.endTiming(
         startTime,
@@ -49,7 +49,7 @@ class AuthorizationGuard implements CanActivate {
       });
     }
 
-    const adminRole = admin.roles;
+    const adminRole = admin.role;
     const isSuperAdmin = admin.isSuperAdmin === true;
     this.logger.step(3, 'Admin Context Loaded', { adminRole, isSuperAdmin });
 

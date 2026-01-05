@@ -11,6 +11,7 @@ import {
 import { UserDTO } from './user.dto';
 import { GenresDTO } from './genres.dto';
 import { ArtistsDTO } from './artists.dto';
+import { ArtistsRoleDTO } from './artists-role.dto';
 import { AlbumsDTO } from './albums.dto';
 import { TrackDTO } from './track.dto';
 import { TrackGenresDTO } from './track-genres.dto';
@@ -27,6 +28,7 @@ export {
   UserDTO,
   GenresDTO,
   ArtistsDTO,
+  ArtistsRoleDTO,
   AlbumsDTO,
   TrackDTO,
   TrackGenresDTO,
@@ -42,6 +44,7 @@ export const GlobalDTOs = [
   UserDTO,
   GenresDTO,
   ArtistsDTO,
+  ArtistsRoleDTO,
   AlbumsDTO,
   TrackDTO,
   TrackGenresDTO,

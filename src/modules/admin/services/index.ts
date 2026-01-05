@@ -1,13 +1,15 @@
 import { Provider } from '@nestjs/common';
-import { AuthenticationService } from './authentication.service';
+import { TokenService } from '@shared';
+import { AdminRoleService } from './admin_role.service';
 import { AdminService } from './admin.service';
 import { PageService } from './page.service';
-import { TokenService } from '@shared';
+import { AuthenticationService } from './authentication.service';
 
 export const AdminServiceProvider: Provider[] = [
+  AdminRoleService,
   AuthenticationService,
   AdminService,
   PageService,
   TokenService,
 ];
-export { AuthenticationService, AdminService, PageService };
+export { AdminRoleService, PageService, AdminService, AuthenticationService };

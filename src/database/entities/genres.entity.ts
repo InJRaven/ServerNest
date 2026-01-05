@@ -11,8 +11,6 @@ import {
 } from 'typeorm';
 
 @Entity({ name: 'Genres' })
-@Index(['title', 'slug'])
-@Index(['popularity', 'track_count', 'album_count'])
 class GenresEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;

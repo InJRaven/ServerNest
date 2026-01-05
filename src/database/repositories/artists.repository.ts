@@ -1,7 +1,7 @@
 import { Repository } from 'typeorm';
 import { ArtistsEntity } from '@entities';
 import { BaseRepository } from '@base';
-import { Injectable } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
 
 interface IArtistRepository {
   getArtistsByGenre(genre: string, limit: number): Promise<ArtistsEntity[]>;
@@ -9,12 +9,15 @@ interface IArtistRepository {
   incrementFollowers(id: string, count: number): Promise<void>;
   updatePopularity(id: string, popularity: number): Promise<void>;
 }
-@Injectable()
+
 class ArtistsRepository
   extends BaseRepository<ArtistsEntity>
   implements IArtistRepository
 {
-  constructor(repository: Repository<ArtistsEntity>) {
+  constructor(
+    @InjectRepository(ArtistsEntity)
+    repository: Repository<ArtistsEntity>,
+  ) {
     super(repository);
   }
 
