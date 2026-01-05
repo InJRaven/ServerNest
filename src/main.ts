@@ -18,7 +18,9 @@ async function bootstrap() {
       const allowedOrigins = process.env.CORS_ORIGIN?.split(',') ?? [];
 
       // allow non-browser requests (Postman, server-to-server)
-      if (!origin) return callback(null, true);
+      if (!origin || origin.startsWith('insomnia://')) {
+        return callback(null, true);
+      }
 
       if (allowedOrigins.includes(origin)) {
         return callback(null, true);
