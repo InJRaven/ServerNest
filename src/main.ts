@@ -1,6 +1,6 @@
 import { NestFactory } from '@nestjs/core';
 import cookieParser from 'cookie-parser';
-// import express from 'express';
+import express from 'express';
 import { Session, Database } from '@config';
 import { AdminModule } from './modules/admin/admin.module';
 
@@ -39,8 +39,8 @@ async function bootstrap() {
   // Session Init
   server.use(server.get(Session).getSessionMiddleware());
 
-  // server.use(express.json()); // body-parser
-  // server.use(express.urlencoded({ extended: false }));
+  server.use(express.json()); // body-parser
+  server.use(express.urlencoded({ extended: false }));
 
   // Check Database and Schema
   await server.get(Database).checkConnection();
