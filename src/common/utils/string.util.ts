@@ -13,6 +13,16 @@ class StringUtil {
       .replace(/^-+|-+$/g, '');
   }
 
+  static identify(text: string): string {
+    return text
+      .toUpperCase()
+      .trim()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/[^\w\s-]/g, '')
+      .replace(/[\s_-]+/g, '-')
+      .replace(/^-+|-+$/g, '');
+  }
   /**
    * Truncate text
    */

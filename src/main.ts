@@ -2,10 +2,10 @@ import { NestFactory } from '@nestjs/core';
 import cookieParser from 'cookie-parser';
 import express from 'express';
 import { Session, Database } from '@config';
-import { AdminModule } from './modules/admin/admin.module';
+import { ServerModule } from './modules/server.module';
 
 async function bootstrap() {
-  const server = await NestFactory.create(AdminModule);
+  const server = await NestFactory.create(ServerModule);
 
   // const httpsOptions = {
   //   key: fs.readFileSync('localhost-key.pem'),
@@ -16,7 +16,6 @@ async function bootstrap() {
   server.enableCors({
     origin: (origin, callback) => {
       const allowedOrigins = process.env.CORS_ORIGIN?.split(',') ?? [];
-
       // allow non-browser requests (Postman, server-to-server)
       if (!origin || origin.startsWith('insomnia://')) {
         return callback(null, true);

@@ -1,5 +1,6 @@
 import { GenreRepository } from './genre.repository';
+import { ArtistRolesRepository } from './artist_roles.repository';
 
-export { GenreRepository };
+export { GenreRepository, ArtistRolesRepository };
 
-export const CoreRepositories = [GenreRepository];
+export const CoreRepositories = [GenreRepository, ArtistRolesRepository];

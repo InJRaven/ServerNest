@@ -10,9 +10,10 @@ import {
 } from '@exceptions';
 import { FindManyOptions } from 'typeorm';
 import { BaseService } from '@base';
+import { defaultGenres } from '@shared';
+import { GenreDTO } from '@CoreDTOs';
 import { Genre } from '@CoreEntities';
 import { GenreRepository } from '@CoreRepositories';
-import { defaultGenres } from '@shared';
 
 // interface ICreateResult {
 //   success: number;
@@ -63,110 +64,111 @@ class GenresService extends BaseService<Genre> {
     }
     this.logger.log(`✅ Genre seeding completed!`);
   }
-  //   async createGenre(data: GenresDTO): Promise<IApiResponse> {
-  //     try {
-  //       const startTime = this.logger.startTiming();
-  //       this.logger.step(1, 'Validata Title Exist', data.title);
 
-  //       const exists = await this.repository.findOne({
-  //         where: { title: data.title },
-  //       });
-  //       if (exists) {
-  //         this.logger.duplicateError('Genres', 'title', data.title);
-  //         throw new EntityAlreadyExistsException(
-  //           'Genres',
-  //           'title',
-  //           data.title,
-  //           'TITLE_ALREADY_EXISTS',
-  //         );
-  //       }
+  async createGenre(data: GenreDTO): Promise<IApiResponse> {
+    try {
+      const startTime = this.logger.startTiming();
+      this.logger.step(1, 'Validata Name Exist', data.name);
 
-  //       this.logger.step(2, 'Create id and slug');
-  //       const id = this.generateId();
-  //       const slug = StringUtil.slugify(data.title);
+      const exists = await this.repository.findOne({
+        where: { name: data.name },
+      });
+      if (exists) {
+        this.logger.duplicateError('Genres', 'name', data.name);
+        throw new EntityAlreadyExistsException(
+          'Genres',
+          'name',
+          data.name,
+          'TITLE_ALREADY_EXISTS',
+        );
+      }
 
-  //       this.logger.step(3, 'Create genre');
-  //       const genre = await this.repository.create({ id, slug, ...data });
+      this.logger.step(2, 'Create identify and slug');
+      const slug = StringUtil.slugify(data.name);
+      const identify = StringUtil.identify(data.name);
 
-  //       this.logger.step(4, 'Mapping data to DTO');
-  //       const mapData = this.mapper.toResponseDTO(genre);
+      this.logger.step(3, 'Create genre');
+      const genre = await this.repository.create({ ...data, identify, slug });
 
-  //       const duration = this.logger.endTiming(
-  //         startTime,
-  //         'create genre completed',
-  //       );
-  //       this.logger.performance('createGenre', duration);
-  //       return ResponseUtil.created('Genre created successfully', {
-  //         genre: mapData,
-  //       });
-  //     } catch (error) {
-  //       this.logger.error('Failed to create genres batch', error as Error);
-  //       if (
-  //         error instanceof InvalidOperationException ||
-  //         error instanceof EntityAlreadyExistsException
-  //       ) {
-  //         throw error;
-  //       }
+      this.logger.step(4, 'Mapping data to DTO');
+      const mapData = this.mapper.toResponseDTO(genre);
 
-  //       throw new InternalServerException(
-  //         'Failed to create genres batch',
-  //         error as Error,
-  //         'GenresService.createGenre',
-  //       );
-  //     }
-  //   }
+      const duration = this.logger.endTiming(
+        startTime,
+        'create genre completed',
+      );
+      this.logger.performance('createGenre', duration);
+      return ResponseUtil.created('Genre created successfully', {
+        genre: mapData,
+      });
+    } catch (error) {
+      this.logger.error('Failed to create genres batch', error as Error);
+      if (
+        error instanceof InvalidOperationException ||
+        error instanceof EntityAlreadyExistsException
+      ) {
+        throw error;
+      }
 
-  //   async updateGenre(
-  //     id: string,
-  //     data: GenresDTO,
-  //     options?: FindManyOptions<GenresEntity>,
-  //   ): Promise<IApiResponse> {
-  //     const startTime = this.logger.startTiming();
-  //     this.logger.step(1, 'BEGIN: Update Genre', { id });
-  //     try {
-  //       this.logger.step(2, 'Validating genre exists', { id });
-  //       const exists = await this.checkExistsWithID({
-  //         where: { id, ...(options?.where ?? {}) },
-  //       });
+      throw new InternalServerException(
+        'Failed to create genres batch',
+        error as Error,
+        'GenresService.createGenre',
+      );
+    }
+  }
 
-  //       if (!exists) {
-  //         this.logger.notFound('Genres', 'id', id);
-  //         throw new EntityNotFoundException('Genre', id, 'NOT_FOUND');
-  //       }
-  //       const isTitleChanged = exists.title !== data.title;
-  //       this.logger.step(
-  //         3,
-  //         isTitleChanged
-  //           ? 'Title changed → regenerating slug'
-  //           : 'Title unchanged → keeping existing slug',
-  //         { id },
-  //       );
-  //       const payload = isTitleChanged
-  //         ? { ...data, slug: StringUtil.slugify(data.title) }
-  //         : data;
+  async updateGenre(
+    id: string,
+    data: GenreDTO,
+    options?: FindManyOptions<Genre>,
+  ): Promise<IApiResponse> {
+    const startTime = this.logger.startTiming();
+    this.logger.step(1, 'BEGIN: Update Genre', { id });
+    try {
+      this.logger.step(2, 'Validating genre exists', { id });
+      const exists = await this.checkExistsWithID({
+        where: { id, ...(options?.where ?? {}) },
+      });
 
-  //       this.logger.step(4, 'Merge and Save genre', { id });
-  //       const updatedGenre = await this.repository.mergeAndSave(exists, payload);
+      if (!exists) {
+        this.logger.notFound('Genres', 'id', id);
+        throw new EntityNotFoundException('Genre', id, 'NOT_FOUND');
+      }
+      const isTitleChanged = exists.name !== data.name;
+      this.logger.step(
+        3,
+        isTitleChanged
+          ? 'Title changed → regenerating slug'
+          : 'Title unchanged → keeping existing slug',
+        { id },
+      );
+      const payload = isTitleChanged
+        ? { ...data, slug: StringUtil.slugify(data.name) }
+        : data;
 
-  //       this.logger.operation('UPDATE', 'Genres', { id });
-  //       const mapData = this.mapper.toResponseDTO(updatedGenre);
+      this.logger.step(4, 'Merge and Save genre', { id });
+      const updatedGenre = await this.repository.merge(exists, payload);
 
-  //       const duration = this.logger.endTiming(startTime, 'update completed');
-  //       this.logger.performance('updateGenre', duration);
+      this.logger.operation('UPDATE', 'Genres', { id });
+      const mapData = this.mapper.toResponseDTO(updatedGenre);
 
-  //       return ResponseUtil.success('Genre updated successfully', mapData);
-  //     } catch (error) {
-  //       this.logger.error('Failed to update genre', error as Error);
-  //       if (error instanceof EntityNotFoundException) {
-  //         throw error;
-  //       }
-  //       throw new InternalServerException(
-  //         'Failed to update genre',
-  //         error as Error,
-  //         'GenresService.updateGenre',
-  //       );
-  //     }
-  //   }
+      const duration = this.logger.endTiming(startTime, 'update completed');
+      this.logger.performance('updateGenre', duration);
+
+      return ResponseUtil.success('Genre updated successfully', mapData);
+    } catch (error) {
+      this.logger.error('Failed to update genre', error as Error);
+      if (error instanceof EntityNotFoundException) {
+        throw error;
+      }
+      throw new InternalServerException(
+        'Failed to update genre',
+        error as Error,
+        'GenresService.updateGenre',
+      );
+    }
+  }
 
   //   async getGenreById(
   //     id: string,
@@ -295,27 +297,44 @@ class GenresService extends BaseService<Genre> {
   //       );
   //     }
   //   }
-  async getAllGenres(options?: FindManyOptions<Genre>): Promise<IApiResponse> {
+  async getAllGenres(
+    limit: number = 10,
+    offset: number = 0,
+    options?: FindManyOptions<Genre>,
+  ): Promise<IApiResponse> {
     const startTime = this.logger.startTiming();
     try {
       this.logger.step(1, 'Start retrieving genre list');
-      const genres = await this.genres.findAll(options);
+      // const genres = await this.genres.findAll(options);
+
+      const genres = await this.genres.findAllPagination(
+        limit,
+        offset,
+        options,
+      );
 
       this.logger.step(2, 'Genre records retrieved from database', {
-        totalRecords: genres.length,
+        totalRecords: genres.data.length,
       });
-      const mappedGenres = this.mapper.toListResponseDTOList(genres);
-      this.logger.transform('Genre[]', 'GenreListResponseDTO[]', genres.length);
+      const mappedGenres = this.mapper.toListResponseDTOList(genres.data);
+      this.logger.transform(
+        'Genre[]',
+        'GenreListResponseDTO[]',
+        genres.data.length,
+      );
 
       this.logger.operation(
         'READ',
         'Genres',
-        { totalRecords: genres.length },
+        { totalRecords: genres.meta.total },
         this.logger.endTiming(startTime, 'Retrieve genre list completed'),
       );
-      return ResponseUtil.success('Get Success', {
-        genres: mappedGenres,
-      });
+      return {
+        ...ResponseUtil.success('Get Success', {
+          genres: mappedGenres,
+        }),
+        meta: genres.meta,
+      };
     } catch (error) {
       this.logger.error('Error fetching all genres', error as Error);
       if (error instanceof EntityNotFoundException) throw error;

@@ -8,7 +8,7 @@ import {
 } from 'typeorm';
 import { v4 as uuidv4 } from 'uuid';
 
-abstract class BaseRepository<Entity extends { id: string }>
+abstract class BaseRepository<Entity extends { id?: string }>
   implements IBaseRepository<Entity>
 {
   constructor(protected repository: Repository<Entity>) {}
@@ -110,7 +110,7 @@ abstract class BaseRepository<Entity extends { id: string }>
 
   async softDelete(id: string): Promise<boolean> {
     const result = await this.repository.update(id, {
-      is_deleted: true,
+      isDeleted: true,
     } as any);
     return (result.affected || 0) > 0;
   }

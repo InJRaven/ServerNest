@@ -48,10 +48,16 @@ class AuthorizationGuard implements CanActivate {
         message: 'Missing Authenticated User In Request',
       });
     }
-
-    const adminRole = admin.role;
     const isSuperAdmin = admin.isSuperAdmin === true;
-    this.logger.step(3, 'Admin Context Loaded', { adminRole, isSuperAdmin });
+
+    const adminRoles: string[] = Array.isArray(admin.role)
+      ? admin.role
+      : [admin.role];
+    const checkRole = reqAuth.roles?.some((r) => adminRoles.includes(r));
+    this.logger.step(3, 'Admin Context Loaded', {
+      adminRole: admin.role,
+      isSuperAdmin,
+    });
 
     if (reqAuth.superAdmin) {
       this.logger.step(4, 'Checking Super Admin Requirement');
@@ -90,9 +96,10 @@ class AuthorizationGuard implements CanActivate {
     if (reqAuth.roles && reqAuth.roles.length > 0) {
       this.logger.step(4, 'Checking role requirement', {
         requiredRoles: reqAuth.roles,
-        adminRole,
+        adminRole: admin.role,
       });
-      if (reqAuth.roles.includes(adminRole)) {
+
+      if (checkRole) {
         this.logger.operation('READ', 'Authorization', reqAuth);
         const duration = this.logger.endTiming(
           startTime,
@@ -105,7 +112,7 @@ class AuthorizationGuard implements CanActivate {
       this.logger.auth('PERMISSION_DENIED', reqAuth.roles.join(', '));
       this.logger.warn('Role mismatch', {
         required: reqAuth.roles,
-        got: adminRole,
+        got: adminRoles,
       });
 
       const duration = this.logger.endTiming(
@@ -115,7 +122,7 @@ class AuthorizationGuard implements CanActivate {
       this.logger.performance('AuthorizationGuard', duration);
       throw new PermissionDeniedException({
         code: 'INSUFFICIENT_ROLE',
-        message: `Required roles: [${reqAuth.roles.join(', ')}], got: ${adminRole}`,
+        message: `Required roles: [${reqAuth.roles.join(', ')}], got: ${admin.role}`,
       });
     }
 

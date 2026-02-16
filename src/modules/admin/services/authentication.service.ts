@@ -15,7 +15,6 @@ import {
 import { IApiResponse } from '@interfaces';
 import { ResponseUtil } from '@utils';
 
-import { AdminLoginDTO, RegisterAdminDTO } from '@DTO';
 import { TokenService } from '@shared';
 import { BaseService } from '@base';
 import { AdminMapper } from '@AdminMapper';

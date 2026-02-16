@@ -40,7 +40,12 @@
       "@CoreRepositories": ["./src/database/core/repositories"],
       "@CoreDTOs": ["./src/database/core/DTO"],
       "@CoreServices": ["./src/modules/core/services"],
-      "@CoreMapper": ["./src/modules/core/mapper"]
+      "@CoreMapper": ["./src/modules/core/mapper"],
+      "@CoreControllers": ["./src/modules/core/controllers"],
+
+      "@PublicEntities": ["./src/database/public/entities"],
+      "@PublicDTOs": ["./src/database/public/DTO"],
+      "@PublicRepositories": ["./src/database/public/repositories"]
     },
     "incremental": true,
     "skipLibCheck": true,

@@ -41,7 +41,7 @@ class AdminDTO {
   language?: string;
 
   @IsString()
-  roles: string;
+  role: string;
 
   @IsOptional()
   @IsBoolean()

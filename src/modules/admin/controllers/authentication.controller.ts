@@ -25,11 +25,12 @@ export class AuthenticationController {
   async login(@Body() data: LoginDTO, @Req() req: Request) {
     return await this.services.login(data, req);
   }
-  // @Post('logout')
-  // @HttpCode(HttpStatus.OK)
-  // async logout(@Req() req: Request) {
-  //   return await this.services.logout(req);
-  // }
+
+  @Post('logout')
+  @HttpCode(HttpStatus.OK)
+  async logout(@Req() req: Request) {
+    return await this.services.logout(req);
+  }
   // @Post('refresh')
   // @HttpCode(HttpStatus.OK)
   // async refresh(@Req() req: Request) {

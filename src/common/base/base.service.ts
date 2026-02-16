@@ -66,7 +66,7 @@ abstract class BaseService<Entity extends { id: string; isDeleted: boolean }> {
     const start = this.logger.startTiming();
     this.logger.step(1, `Validating ${this.Entity} exists`, { id });
     try {
-      const exists = await this.repository.exists({
+      const exists = await this.repository.findOne({
         where: { id, isDeleted: false },
       } as FindManyOptions<Entity>);
       if (!exists) {
@@ -108,7 +108,7 @@ abstract class BaseService<Entity extends { id: string; isDeleted: boolean }> {
       }
 
       this.logger.step(2, 'Calling repository.hardDelete');
-      await this.hardDelete(id);
+      await this.repository.hardDelete(id);
 
       this.logger.operation('DELETE', this.Entity, { id });
       const duration = this.logger.endTiming(

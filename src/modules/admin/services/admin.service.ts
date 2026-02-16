@@ -10,7 +10,7 @@ import {
   PermissionDeniedException,
   TokenInvalidException,
 } from '@exceptions';
-import { IApiResponse } from '@interfaces';
+import { AuthUser, IApiResponse } from '@interfaces';
 import { ResponseUtil } from '@utils';
 import { Admin } from '@AdminEntities';
 import {
@@ -115,48 +115,59 @@ class AdminService extends BaseService<Admin> {
         );
       }
 
-      this.logger.step(3, 'Check Roles Exists', data.roles);
+      this.logger.step(3, 'Check Roles Exists', data.role);
       const role = await this.roles.findOne({
-        where: { name: data.roles },
+        where: { name: data.role },
       });
 
       if (role === null) {
-        this.logger.notFound('AdminRole', 'name', data.roles);
+        this.logger.notFound('AdminRole', 'name', data.role);
         throw new EntityNotFoundException(
           'AdminRole',
-          data.roles,
+          data.role,
           'ROLE_NOT_FOUND',
         );
       }
 
       this.logger.step(4, 'Hash Password and create ID');
       const hashedPassword = await bcrypt.hash(data.password, 10);
-      const id = this.generateId();
 
       this.logger.step(5, 'Create Admin');
       const newAdmin = await this.admins.create({
         ...data,
-        id,
         password: hashedPassword,
       });
 
       this.logger.step(6, 'Save To AdminRoleAssignment');
       await this.assignmentRepository.create({
-        id: this.generateId(),
         admin: newAdmin,
         role,
         assignedBy: createdBy || null,
         assignedAt: new Date(),
       });
 
-      this.logger.step(7, 'Mapping Data');
-      const mapData = this.mapper.toResponseDTO(newAdmin);
+      this.logger.step(7, 'Reload admin with relations');
+      const reloadData = await this.repository.findOne({
+        where: { id: newAdmin.id },
+        relations: {
+          roleAssignments: {
+            role: true,
+          },
+        },
+      });
+
+      if (!reloadData) {
+        throw new InternalServerException(
+          'Failed to load admin after creation',
+        );
+      }
+      const mapData = this.mapper.toResponseDTO(reloadData);
 
       const duration = this.logger.endTiming(
         startTime,
         'Create Admin Completed',
       );
-      this.logger.operation('CREATE', 'admin', newAdmin);
+      this.logger.operation('CREATE', 'admin', newAdmin.id);
       this.logger.performance('createAdmin', duration);
       return ResponseUtil.created('Admin created successfully', mapData);
     } catch (error) {
@@ -177,10 +188,10 @@ class AdminService extends BaseService<Admin> {
     }
   }
 
-  async getMe(req: Request): Promise<IApiResponse> {
+  async getMe(admin: AuthUser): Promise<IApiResponse> {
     const startTime = this.logger.startTiming();
     try {
-      if (!req.user || !req.user.id) {
+      if (!admin || !admin.id) {
         this.logger.auth(
           'PERMISSION_DENIED',
           'UNKNOWN',
@@ -203,17 +214,15 @@ class AdminService extends BaseService<Admin> {
           message: 'Authentication context missing. Please log in again.',
         });
       }
-      const userId = req.user.id;
 
       this.logger.step(2, 'Authentication Context Found', {
-        userId,
-        email: req.user.email,
-        role: req.user.role,
+        id: admin.id,
+        email: admin.email,
       });
 
-      this.logger.step(3, 'Querying database for user record', userId);
+      this.logger.step(3, 'Querying database for user record', admin.id);
       const user = await this.repository.findOne({
-        where: { id: userId },
+        where: { id: admin.id },
         relations: {
           roleAssignments: {
             role: true,
@@ -224,19 +233,19 @@ class AdminService extends BaseService<Admin> {
       if (!user) {
         this.logger.auth(
           'PERMISSION_DENIED',
-          userId,
+          admin.id,
           'User Record Not Found In Database',
         );
 
         const duration = this.logger.endTiming(
           startTime,
-          `Failed to load user context: no user record for ID ${userId}`,
+          `Failed to load user context: no user record for ID ${admin.id}`,
         );
         this.logger.performance('AdminService.getUser', duration);
 
         throw new PermissionDeniedException({
           code: 'USER_NOT_FOUND',
-          message: `No User Exists With ID: ${userId}. User may have been removed.`,
+          message: `No User Exists With ID: ${admin.id}. User may have been removed.`,
         });
       }
 

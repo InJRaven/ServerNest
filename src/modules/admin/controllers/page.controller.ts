@@ -1,6 +1,4 @@
 import { Request } from 'express';
-import { JwtAuthGuard } from '@guards';
-import { PageService } from '@AdminServices';
 import {
   Controller,
   Get,
@@ -11,7 +9,6 @@ import {
   UseGuards,
 } from '@nestjs/common';
 
-import { AdminRepository } from '@repositories';
 @Controller()
 export class PageController {
   // constructor(

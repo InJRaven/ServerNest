@@ -13,7 +13,7 @@ import { Admin } from '@AdminEntities';
 @Entity('artist_role_assignments')
 @Index('idx_artist_role_assignments_artist_track', ['artistId', 'trackId'])
 @Index('idx_artist_role_assignments_role', ['roleId'])
-@Index('idx_artist_role_assignments_isActive', ['isActive'])
+@Index('idx_artist_role_assignments_isPrimary', ['isPrimary'])
 export class ArtistRoleAssignment {
   @PrimaryColumn('uuid')
   artistId: string;
@@ -49,8 +49,8 @@ export class ArtistRoleAssignment {
   @Column({ type: 'timestamptz', default: () => 'NOW()' })
   assignedAt: Date;
 
-  @Column({ default: true })
-  isActive: boolean;
+  @Column({ default: false })
+  isPrimary: boolean;
 
   @Column({ type: 'timestamptz', nullable: true })
   revokedAt?: Date;

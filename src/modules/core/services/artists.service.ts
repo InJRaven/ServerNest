@@ -9,10 +9,7 @@ import {
 import { BaseService } from '@base';
 import { ResponseUtil, StringUtil } from '@utils';
 import { IApiResponse } from '@interfaces';
-import { ArtistsRepository } from '@repositories';
-import { ArtistsDTO } from '@DTO';
-import { ArtistsEntity } from '@entities';
-import { ArtistMapper } from '@core/mapper';
+
 @Injectable()
 class ArtistsServices {}
 // extends BaseService < ArtistsEntity > {

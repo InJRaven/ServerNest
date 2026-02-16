@@ -1,4 +1,8 @@
-import { SetMetadata } from '@nestjs/common';
+import {
+  createParamDecorator,
+  ExecutionContext,
+  SetMetadata,
+} from '@nestjs/common';
 
 type AppRole =
   | 'System Admin'
@@ -19,4 +23,11 @@ const Auth = (req: AuthRequirement = {}) =>
     ...req,
   } as AuthRequirement);
 
-export { type AppRole, AuthRequirement, AUTH_KEY, Auth };
+const CurrentUser = createParamDecorator(
+  (_data: unknown, ctx: ExecutionContext) => {
+    const request = ctx.switchToHttp().getRequest();
+    return request.user;
+  },
+);
+
+export { type AppRole, AuthRequirement, CurrentUser, AUTH_KEY, Auth };

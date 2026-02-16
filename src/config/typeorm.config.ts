@@ -2,6 +2,7 @@ import { ConfigService } from '@nestjs/config';
 import { TypeOrmModuleOptions } from '@nestjs/typeorm';
 import { CoreEntities } from '@CoreEntities';
 import { AdminEntities } from '@AdminEntities';
+import { PublicEntities } from '@PublicEntities';
 
 const TypeORMConfig = (configService: ConfigService): TypeOrmModuleOptions => {
   return {
@@ -11,7 +12,7 @@ const TypeORMConfig = (configService: ConfigService): TypeOrmModuleOptions => {
     username: configService.get('DB_USER'),
     password: configService.get('DB_PASSWORD'),
     database: configService.get('DB_DATABASE'),
-    entities: [...CoreEntities, ...AdminEntities],
+    entities: [...CoreEntities, ...AdminEntities, ...PublicEntities],
     schema: configService.get('DB_SCHEMA'),
     synchronize: true,
   };

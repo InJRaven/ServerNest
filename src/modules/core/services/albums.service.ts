@@ -7,11 +7,7 @@ import {
   InternalServerException,
   InvalidOperationException,
 } from '@exceptions';
-import { AlbumsDTO } from '@DTO';
-import { AlbumsRepository } from '@repositories';
-import { AlbumMapper } from '@core/mapper';
 import { FindManyOptions } from 'typeorm';
-import { AlbumsEntity } from '@entities';
 
 @Injectable()
 class AlbumsService {

@@ -10,6 +10,11 @@ import {
   AccountLockedException,
   EmailNotVerifiedException,
 } from './authentication.exception';
+import { InvalidMimeTypeException } from './uploads/invalid-mime.exception';
+import { InvalidFileExtensionException } from './uploads/invalid-extension.exception';
+import { FileTooLargeException } from './uploads/file-too-large.exception';
+import { MissingFileException } from './uploads/missing-file.exception';
+
 export {
   InvalidCredentialsException,
   TokenExpiredException,
@@ -21,4 +26,10 @@ export {
   EntityAlreadyExistsException,
   EntityNotFoundException,
   InternalServerException,
+
+  //uploads
+  InvalidMimeTypeException,
+  InvalidFileExtensionException,
+  FileTooLargeException,
+  MissingFileException,
 };

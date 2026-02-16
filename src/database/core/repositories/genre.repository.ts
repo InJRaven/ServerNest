@@ -11,7 +11,7 @@ class GenreRepository extends BaseRepository<Genre> {
   }
 
   async findAll(options?: FindManyOptions<Genre>): Promise<any[]> {
-    const results = await this.repository
+    const qb = this.repository
       .createQueryBuilder('genres')
       .leftJoin('genres.trackGenres', 'tg')
       .leftJoin('tg.track', 'track')
@@ -31,11 +31,14 @@ class GenreRepository extends BaseRepository<Genre> {
       .addSelect('COUNT(DISTINCT tg.trackId)', 'trackCount')
       .addSelect('COUNT(DISTINCT ag.albumId)', 'albumCount')
       .addSelect('COALESCE(SUM(track.playCount), 0)', 'totalPlays')
-      .where({ ...options })
       .groupBy('genres.id')
-      .orderBy('genres.name', 'ASC')
-      .getRawMany();
+      .orderBy('genres.name', 'ASC');
+    // .getRawMany();
+    if (options?.where) {
+      qb.where(options.where);
+    }
 
+    const results = await qb.getRawMany();
     return results.map((g) => ({
       id: g.genres_id,
       identify: g.genres_identify,
