@@ -15,20 +15,6 @@ import { GenreDTO } from '@CoreDTOs';
 import { Genre } from '@CoreEntities';
 import { GenreRepository } from '@CoreRepositories';
 
-// interface ICreateResult {
-//   success: number;
-//   failed: number;
-//   createGenres?: GenreResponseDTO[];
-//   updateGenres?: GenreResponseDTO[];
-//   failedGenres?: Array<{
-//     title?: string;
-//     reason: string;
-//   }>;
-//   failedUpdateGenres?: Array<{
-//     id: string;
-//     reason: string;
-//   }>;
-// }
 @Injectable()
 class GenresService extends BaseService<Genre> {
   constructor(

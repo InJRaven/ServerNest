@@ -1,17 +1,49 @@
-import { IBaseRepository, IPagination } from './base-repository.interface';
+import {
+  IBaseRepository,
+  IPagination,
+  ISearchableField,
+} from './base-repository.interface';
 import {
   Repository,
   FindOptionsWhere,
   FindManyOptions,
   DeepPartial,
   In,
+  ObjectLiteral,
+  SelectQueryBuilder,
 } from 'typeorm';
 import { v4 as uuidv4 } from 'uuid';
 
-abstract class BaseRepository<Entity extends { id?: string }>
+abstract class BaseRepository<Entity extends ObjectLiteral & { id: string }>
   implements IBaseRepository<Entity>
 {
   constructor(protected repository: Repository<Entity>) {}
+
+  /* ---------------------------------------------------------
+   * PROTECTED
+   * --------------------------------------------------------- */
+  protected alias: string = '';
+  protected searchableFields: ISearchableField[] = [];
+
+  protected buildResult(
+    data: Entity[],
+    total: number,
+    limit: number,
+    offset: number,
+  ): IPagination<Entity> {
+    return {
+      data,
+      meta: {
+        total,
+        page: Math.floor(offset / limit) + 1,
+        limit,
+        totalPages: Math.ceil(total / limit),
+        hasNextPage: offset + limit < total,
+        hasPreviousPage: offset > 0,
+      },
+    };
+  }
+
   async create(data: DeepPartial<Entity>): Promise<Entity> {
     return await this.repository.save(data);
   }
@@ -58,20 +90,7 @@ abstract class BaseRepository<Entity extends { id?: string }>
       skip: offset,
     });
 
-    const totalPages = Math.ceil(total / limit);
-    const page = Math.floor(offset / limit);
-
-    return {
-      data,
-      meta: {
-        total,
-        page,
-        limit,
-        totalPages,
-        hasNextPage: offset + limit < total,
-        hasPreviousPage: page > 0,
-      },
-    };
+    return this.buildResult(data, total, limit, offset);
   }
   async findAll(options?: FindManyOptions<Entity>): Promise<Entity[]> {
     return await this.repository.find(options);
@@ -83,10 +102,6 @@ abstract class BaseRepository<Entity extends { id?: string }>
   /* ---------------------------------------------------------
    * ADMIN METHOD
    * --------------------------------------------------------- */
-  // async update(data: DeepPartial<Entity>): Promise<Entity> {
-  //   return await this.repository.save(data);
-  // }
-
   async save(data: DeepPartial<Entity>): Promise<Entity> {
     return this.repository.save(data);
   }
@@ -95,13 +110,6 @@ abstract class BaseRepository<Entity extends { id?: string }>
     const merged = this.repository.merge(entity, data);
     return this.repository.save(merged);
   }
-  // async updateMany(
-  //   where: FindOptionsWhere<Entity>,
-  //   data: DeepPartial<Entity>,
-  // ): Promise<number> {
-  //   const result = await this.repository.update(where, data as any);
-  //   return result.affected || 0;
-  // }
 
   async hardDelete(id: string): Promise<boolean> {
     const result = await this.repository.delete(id);
@@ -221,6 +229,85 @@ abstract class BaseRepository<Entity extends { id?: string }>
       // order: { [popularityField]: 'DESC' } as any,
       take: limit,
     });
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  applyJoins(_qb: SelectQueryBuilder<Entity>): void {}
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  applyBaseConditions(_qb: SelectQueryBuilder<Entity>): void {}
+
+  applyOrder(qb: SelectQueryBuilder<Entity>): void {
+    qb.orderBy(`${this.alias}.id`, 'ASC');
+  }
+
+  getFindOptions(): FindManyOptions<Entity> {
+    return {};
+  }
+
+  async search(
+    search?: string,
+    limit?: number,
+    offset?: number,
+  ): Promise<IPagination<Entity>> {
+    limit = Math.min(Number(limit) || 10, 50);
+    offset = Math.max(Number(offset) || 0, 0);
+
+    const qb = this.repository.createQueryBuilder(this.alias);
+
+    this.applyBaseConditions(qb);
+    this.applyJoins(qb);
+
+    const trimmedSearch = search?.trim();
+    if (trimmedSearch) {
+      const joined = new Set<string>();
+
+      this.searchableFields.forEach((field) => {
+        field.joins?.forEach((join) => {
+          if (!joined.has(join.alias)) {
+            qb.leftJoin(join.path, join.alias);
+            joined.add(join.alias);
+          }
+        });
+      });
+
+      const conditions = this.searchableFields
+        .map((f) => `${f.column} ILIKE :search`)
+        .join(' OR ');
+
+      qb.andWhere(`(${conditions})`, { search: `%${trimmedSearch}%` });
+    }
+
+    this.applyOrder(qb);
+
+    // ===== Phase 1: total + ids =====
+    const total = await qb.clone().getCount();
+
+    const idRows = await qb
+      .clone()
+      .select(`${this.alias}.id`, 'id')
+      .skip(offset)
+      .take(limit)
+      .getRawMany();
+
+    const ids: any[] = idRows.map((row) => row.id);
+
+    if (!ids.length) {
+      return this.buildResult([], total, limit, offset);
+    }
+
+    // ===== Phase 2: full entity với relations =====
+    const rawData = await this.repository.find({
+      ...this.getFindOptions(),
+      where: { id: In(ids) } as any,
+    });
+
+    const dataMap = new Map<any, Entity>(rawData.map((e) => [e.id, e]));
+    const data = ids
+      .map((id) => dataMap.get(id))
+      .filter((e): e is Entity => !!e);
+
+    return this.buildResult(data, total, limit, offset);
   }
 }
 export { BaseRepository };

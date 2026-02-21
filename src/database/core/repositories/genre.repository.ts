@@ -16,24 +16,11 @@ class GenreRepository extends BaseRepository<Genre> {
       .leftJoin('genres.trackGenres', 'tg')
       .leftJoin('tg.track', 'track')
       .leftJoin('genres.albumGenres', 'ag')
-      // .select([
-      //   'genres.id AS id',
-      //   'genres.name AS name',
-      //   'genres.slug AS slug',
-      //   'genres.description AS description',
-      //   'genres.coverUrl AS coverUrl',
-      //   'genres.isDeleted AS deleted',
-      //   'genres.createdAt AS created_at',
-      //   'COUNT(DISTINCT tg.trackId) AS trackCount',
-      //   'COUNT(DISTINCT ag.albumId) AS albumCount',
-      //   'COALESCE(SUM(track.playCount), 0) AS totalPlays',
-      // ])
       .addSelect('COUNT(DISTINCT tg.trackId)', 'trackCount')
       .addSelect('COUNT(DISTINCT ag.albumId)', 'albumCount')
       .addSelect('COALESCE(SUM(track.playCount), 0)', 'totalPlays')
       .groupBy('genres.id')
       .orderBy('genres.name', 'ASC');
-    // .getRawMany();
     if (options?.where) {
       qb.where(options.where);
     }

@@ -1,17 +1,46 @@
-import { FindOptionsWhere, FindManyOptions, DeepPartial } from 'typeorm';
+import {
+  FindOptionsWhere,
+  FindManyOptions,
+  DeepPartial,
+  SelectQueryBuilder,
+  ObjectLiteral,
+} from 'typeorm';
 
-interface IBaseRepository<Entity> {
+/* ---------------------------------------------------------
+ * SUPPORTING TYPES
+ * --------------------------------------------------------- */
+
+interface IJoinDefinition {
+  path: string;
+  alias: string;
+}
+
+interface ISearchableField {
+  column: string;
+  joins?: IJoinDefinition[];
+}
+
+interface IPagination<T> {
+  data: T[];
+  meta: {
+    total: number;
+    page: number;
+    limit: number;
+    totalPages: number;
+    hasNextPage: boolean;
+    hasPreviousPage: boolean;
+  };
+}
+
+/* ---------------------------------------------------------
+ * Interface BaseRepository
+ * --------------------------------------------------------- */
+interface IBaseRepository<Entity extends ObjectLiteral> {
   /* ---------------------------------------------------------
    * CREATE / UPDATE
    * --------------------------------------------------------- */
   create(data: DeepPartial<Entity>): Promise<Entity>;
   createMany(data: DeepPartial<Entity>[]): Promise<Entity[]>;
-
-  // update(data: DeepPartial<Entity>): Promise<Entity>;
-  // updateMany(
-  //   where: FindOptionsWhere<Entity>,
-  //   data: DeepPartial<Entity>,
-  // ): Promise<number>;
 
   save(data: DeepPartial<Entity>): Promise<Entity>;
   merge(entity: Entity, data: DeepPartial<Entity>): Promise<Entity>;
@@ -68,28 +97,23 @@ interface IBaseRepository<Entity> {
     limit?: number,
     options?: FindManyOptions<Entity>,
   ): Promise<Entity[]>;
+
+  /* ---------------------------------------------------------
+   * SUPPORTING HOOKS
+   * --------------------------------------------------------- */
+  applyJoins(qb: SelectQueryBuilder<Entity>): void;
+  applyBaseConditions(qb: SelectQueryBuilder<Entity>): void;
+  applyOrder(qb: SelectQueryBuilder<Entity>): void;
+  getFindOptions(): FindManyOptions<Entity>;
+
+  /* ---------------------------------------------------------
+   * SEARCH
+   * --------------------------------------------------------- */
+  search(
+    search?: string,
+    limit?: number,
+    offset?: number,
+  ): Promise<IPagination<Entity>>;
 }
 
-interface ISearchOptions<Entity> {
-  where?: FindOptionsWhere<Entity> | FindOptionsWhere<Entity>[];
-  search?: string;
-  searchFields?: (keyof Entity)[];
-  page?: number;
-  limit?: number;
-  sortBy?: keyof Entity;
-  sortOrder?: 'ASC' | 'DESC';
-  relations?: string[];
-}
-
-interface IPagination<T> {
-  data: T[];
-  meta: {
-    total: number;
-    page: number;
-    limit: number;
-    totalPages: number;
-    hasNextPage: boolean;
-    hasPreviousPage: boolean;
-  };
-}
-export { IBaseRepository, ISearchOptions, IPagination };
+export { IBaseRepository, IPagination, IJoinDefinition, ISearchableField };
