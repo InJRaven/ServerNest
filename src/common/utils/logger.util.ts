@@ -65,7 +65,7 @@ class LoggerUtil {
    * Level: ERROR
    * Automatically add error stack trace if there is an Error object
    */
-  error(message: string, error?: Error): void {
+  error(message: string, error?: unknown): void {
     const finalMessage = this.formatMessage(message);
 
     if (error instanceof Error) {

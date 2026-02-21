@@ -28,8 +28,6 @@ interface ImportJson {
 export class QuizServices extends BaseService<QuizEntity> {
   constructor(
     protected readonly quiz: QuizRepository,
-    // protected readonly subject: SubjectRepository,
-    // protected readonly assignment: SubjectQuizAssignmentsRepository,
 
     private readonly dataSource: DataSource,
   ) {

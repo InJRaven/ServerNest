@@ -1,7 +1,7 @@
 import { InternalServerErrorException } from '@nestjs/common';
 
 export class InternalServerException extends InternalServerErrorException {
-  constructor(message: string, error?: Error, context?: string) {
+  constructor(message: string, error?: unknown, context?: string) {
     let finalMessage = message;
     if (context) {
       finalMessage = `[${context}] ${message}`;
