@@ -20,10 +20,10 @@ import { AlbumGenre } from './relations/album_genre.entity';
 @Index('idx_album_isDeleted', ['isDeleted'])
 export class Album extends BaseEntity {
   @PrimaryGeneratedColumn('uuid')
-  id: string;
+  id!: string;
 
   @Column({ length: 255 })
-  title: string;
+  title!: string;
 
   @Column({ unique: true, nullable: true })
   slug?: string;
@@ -37,35 +37,35 @@ export class Album extends BaseEntity {
     default: 'album',
   })
   @Index()
-  type: 'album' | 'single' | 'ep' | 'compilation';
+  type: 'album' | 'single' | 'ep' | 'compilation' = 'album';
 
   @Column({ nullable: true })
-  label: string;
+  label!: string;
 
   @Column({ length: 512, nullable: true })
   coverUrl?: string;
 
   @Column({ default: 0 })
-  totalTracks: number;
+  totalTracks!: number;
 
   @Column({ default: 0 })
-  totalDuration: number; // seconds
+  totalDuration!: number; // seconds
 
   @Column({ type: 'numeric', precision: 5, scale: 2, default: 0 })
-  popularity: number;
+  popularity!: number;
 
   @Column({ nullable: false, type: 'date' })
-  release_date: Date;
+  release_date!: Date;
 
   @Column({
     type: 'enum',
     enum: ['public', 'private', 'unlisted'],
     default: 'public',
   })
-  status: string;
+  status!: string;
 
   @Column({ type: 'json', nullable: true })
-  external_urls: {
+  external_urls!: {
     youtube?: string;
     spotify?: string;
     apple_music?: string;
@@ -80,8 +80,8 @@ export class Album extends BaseEntity {
   mainArtist?: Artist;
 
   @OneToMany(() => AlbumTracks, (at) => at.album)
-  albumTracks: AlbumTracks[];
+  albumTracks: AlbumTracks[] = [];
 
   @OneToMany(() => AlbumGenre, (ag) => ag.album)
-  albumGenres: AlbumGenre[];
+  albumGenres: AlbumGenre[] = [];
 }

@@ -1,18 +1,19 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Pool } from 'pg';
+import { DatabaseConfig } from './database.config';
 
 @Injectable()
 class Database {
   private pool: Pool;
   constructor(private readonly configService: ConfigService) {
-    console.log(this.configService.get<string>('DB_HOST', 'localhost'));
+    const config = DatabaseConfig(configService);
     this.pool = new Pool({
-      host: this.configService.get<string>('DB_HOST', 'localhost'),
-      port: Number(this.configService.get<string>('DB_PORT', '5432')),
-      database: this.configService.get<string>('DB_DATABASE', ''),
-      user: this.configService.get<string>('DB_USER', ''),
-      password: this.configService.get<string>('DB_PASSWORD', ''),
+      host: config.host,
+      port: config.port,
+      database: config.database,
+      user: config.user,
+      password: config.password,
     });
   }
   // Check Connect Database
