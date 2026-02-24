@@ -17,6 +17,11 @@ import {
  */
 export class RelationTables1771742041453 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
+    const schema = process.env.DB_SCHEMA ?? 'public';
+    await queryRunner.query(
+      `SET search_path TO "${schema}", extensions, public`,
+    );
+
     // ================================================================
     // artist_role_assignments
     // ================================================================
@@ -165,12 +170,7 @@ export class RelationTables1771742041453 implements MigrationInterface {
           { name: 'trackId', type: 'uuid', isPrimary: true },
           { name: 'trackNumber', type: 'smallint', isNullable: false },
           { name: 'discNumber', type: 'smallint', default: 1 },
-          {
-            name: 'version',
-            type: 'varchar',
-            length: '100',
-            isNullable: true,
-          },
+          { name: 'version', type: 'varchar', length: '100', isNullable: true },
         ],
       }),
       true,
@@ -226,17 +226,11 @@ export class RelationTables1771742041453 implements MigrationInterface {
     );
     await queryRunner.createIndex(
       'album_genres',
-      new TableIndex({
-        name: 'album_genres_album',
-        columnNames: ['albumId'],
-      }),
+      new TableIndex({ name: 'album_genres_album', columnNames: ['albumId'] }),
     );
     await queryRunner.createIndex(
       'album_genres',
-      new TableIndex({
-        name: 'album_genres_genre',
-        columnNames: ['genreId'],
-      }),
+      new TableIndex({ name: 'album_genres_genre', columnNames: ['genreId'] }),
     );
     await queryRunner.createForeignKey(
       'album_genres',
@@ -372,10 +366,7 @@ export class RelationTables1771742041453 implements MigrationInterface {
     );
     await queryRunner.createIndex(
       'track_likes',
-      new TableIndex({
-        name: 'idx_track_likes_user',
-        columnNames: ['userId'],
-      }),
+      new TableIndex({ name: 'idx_track_likes_user', columnNames: ['userId'] }),
     );
     await queryRunner.createIndex(
       'track_likes',

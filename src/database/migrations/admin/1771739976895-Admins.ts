@@ -8,6 +8,11 @@ import {
 
 export class Admins1771739976895 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
+    const schema = process.env.DB_SCHEMA ?? 'public';
+    await queryRunner.query(
+      `SET search_path TO "${schema}", extensions, public`,
+    );
+
     await queryRunner.createTable(
       new Table({
         name: 'admins',
@@ -112,7 +117,8 @@ export class Admins1771739976895 implements MigrationInterface {
       }),
       true,
     );
-    // ── INDEXES ──────────────────────────────────────────────────── //
+
+    // ── Indexes ───────────────────────────────────────────────────────
     await queryRunner.createIndex(
       'admins',
       new TableIndex({
@@ -137,7 +143,7 @@ export class Admins1771739976895 implements MigrationInterface {
       }),
     );
 
-    // ── GIN TRIGRAM INDEXES ───────────────────────────────────────────
+    // ── GIN trigram indexes ───────────────────────────────────────────
     await queryRunner.query(
       `CREATE INDEX IF NOT EXISTS idx_admin_username_trgm ON admins USING gin (username gin_trgm_ops)`,
     );
@@ -145,8 +151,8 @@ export class Admins1771739976895 implements MigrationInterface {
       `CREATE INDEX IF NOT EXISTS idx_admin_email_trgm ON admins USING gin (email gin_trgm_ops)`,
     );
 
-    // ── FOREIGN KEYS ──────────────────────────────────────────────────── //
-    // Who Removed This Administrator
+    // ── Foreign keys ──────────────────────────────────────────────────
+    // Self-referencing FK — admin nào đã xóa admin này
     await queryRunner.createForeignKey(
       'admins',
       new TableForeignKey({
@@ -161,6 +167,8 @@ export class Admins1771739976895 implements MigrationInterface {
 
   public async down(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.dropForeignKey('admins', 'fk_admins_deleted_by');
+    await queryRunner.query(`DROP INDEX IF EXISTS idx_admin_email_trgm`);
+    await queryRunner.query(`DROP INDEX IF EXISTS idx_admin_username_trgm`);
     await queryRunner.dropIndex('admins', 'idx_admin_isDeleted');
     await queryRunner.dropIndex('admins', 'idx_admin_email');
     await queryRunner.dropIndex('admins', 'idx_admin_username');

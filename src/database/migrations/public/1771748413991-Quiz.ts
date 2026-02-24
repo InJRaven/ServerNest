@@ -8,6 +8,11 @@ import {
 
 export class Quiz1771748413991 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
+    const schema = process.env.DB_SCHEMA ?? 'public';
+    await queryRunner.query(
+      `SET search_path TO "${schema}", extensions, public`,
+    );
+
     await queryRunner.createTable(
       new Table({
         name: 'quiz',
@@ -43,18 +48,18 @@ export class Quiz1771748413991 implements MigrationInterface {
       true,
     );
 
-    // ── INDEXES ───────────────────────────────────────────────────────
+    // ── Indexes ───────────────────────────────────────────────────────
     await queryRunner.createIndex(
       'quiz',
       new TableIndex({ name: 'idx_quiz_id', columnNames: ['id'] }),
     );
 
-    // ── GIN TRIGRAM INDEXES ───────────────────────────────────────────
+    // ── GIN trigram indexes ───────────────────────────────────────────
     await queryRunner.query(
       `CREATE INDEX IF NOT EXISTS idx_quiz_question_trgm ON quiz USING gin (question gin_trgm_ops)`,
     );
 
-    // ── FOREIGN KEYS ──────────────────────────────────────────────────
+    // ── Foreign keys ──────────────────────────────────────────────────
     await queryRunner.createForeignKey(
       'quiz',
       new TableForeignKey({

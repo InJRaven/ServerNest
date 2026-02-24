@@ -2,16 +2,20 @@ import {
   MigrationInterface,
   QueryRunner,
   Table,
-  TableForeignKey,
   TableIndex,
+  TableForeignKey,
 } from 'typeorm';
 
 /**
- * Phụ thuộc: Admins (FK deleted_by)
+ * Phụ thuộc: 1771739976895-Admins (FK deleted_by)
  */
-
 export class AdminRoles1771740227757 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
+    const schema = process.env.DB_SCHEMA ?? 'public';
+    await queryRunner.query(
+      `SET search_path TO "${schema}", extensions, public`,
+    );
+
     await queryRunner.createTable(
       new Table({
         name: 'admin_roles',
@@ -93,7 +97,7 @@ export class AdminRoles1771740227757 implements MigrationInterface {
       true,
     );
 
-    // ── INDEXES ───────────────────────────────────────────────────────
+    // ── Indexes ───────────────────────────────────────────────────────
     await queryRunner.createIndex(
       'admin_roles',
       new TableIndex({
@@ -110,12 +114,13 @@ export class AdminRoles1771740227757 implements MigrationInterface {
         isUnique: true,
       }),
     );
-    // ── GIN TRIGRAM INDEXES ───────────────────────────────────────────
+
+    // ── GIN trigram indexes ───────────────────────────────────────────
     await queryRunner.query(
       `CREATE INDEX IF NOT EXISTS idx_admin_role_name_trgm ON admin_roles USING gin (name gin_trgm_ops)`,
     );
 
-    // ── FOREIGN KEYS ──────────────────────────────────────────────────
+    // ── Foreign keys ──────────────────────────────────────────────────
     await queryRunner.createForeignKey(
       'admin_roles',
       new TableForeignKey({
@@ -133,6 +138,7 @@ export class AdminRoles1771740227757 implements MigrationInterface {
       'admin_roles',
       'fk_admin_roles_deleted_by',
     );
+    await queryRunner.query(`DROP INDEX IF EXISTS idx_admin_role_name_trgm`);
     await queryRunner.dropIndex('admin_roles', 'idx_admin_role_name');
     await queryRunner.dropIndex('admin_roles', 'idx_admin_role_identify');
     await queryRunner.dropTable('admin_roles');

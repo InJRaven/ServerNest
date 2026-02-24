@@ -9,7 +9,7 @@
     "build": "nest build",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
     "start": "nest start",
-    "dev": "nest start --watch",
+    "dev": "npm run mg:run && nest start --watch",
     "debug": "nest start --debug --watch",
     "start:prod": "node dist/main",
     "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix",
@@ -18,10 +18,10 @@
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./test/jest-e2e.json",
-    "mg:run": "typeorm-ts-node-commonjs -d src/config/database/migrations.ts migration:run",
-    "mg:revert": "typeorm-ts-node-commonjs -d src/config/database/migrations.ts migration:revert",
-    "mg:show": "typeorm-ts-node-commonjs -d src/config/database/migrations.ts migration:show",
-    "mg:gen": "typeorm-ts-node-commonjs -d src/config/database/migrations.ts migration:generate src/database/migrations/$npm_config_name",
+    "mg:run": "ts-node -r tsconfig-paths/register ./node_modules/typeorm/cli.js -d src/config/database/migrations.ts migration:run",
+    "mg:revert": "ts-node -r tsconfig-paths/register ./node_modules/typeorm/cli.js -d src/config/database/migrations.ts migration:revert",
+    "mg:show": "ts-node -r tsconfig-paths/register ./node_modules/typeorm/cli.js -d src/config/database/migrations.ts migration:show",
+    "mg:gen": "ts-node -r tsconfig-paths/register ./node_modules/typeorm/cli.js -d src/config/database/migrations.ts migration:generate src/database/migrations/$npm_config_name",
     "mg:create": "ts-node scripts/mg-create.ts"
   },
   "dependencies": {

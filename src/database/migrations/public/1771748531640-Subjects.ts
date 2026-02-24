@@ -8,6 +8,11 @@ import {
 
 export class Subjects1771748531640 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
+    const schema = process.env.DB_SCHEMA ?? 'public';
+    await queryRunner.query(
+      `SET search_path TO "${schema}", extensions, public`,
+    );
+
     await queryRunner.createTable(
       new Table({
         name: 'subject',
@@ -45,7 +50,7 @@ export class Subjects1771748531640 implements MigrationInterface {
       true,
     );
 
-    // ── INDEXES ───────────────────────────────────────────────────────
+    // ── Indexes ───────────────────────────────────────────────────────
     await queryRunner.createIndex(
       'subject',
       new TableIndex({
@@ -62,7 +67,7 @@ export class Subjects1771748531640 implements MigrationInterface {
       }),
     );
 
-    // ── GIN TRIGRAM INDEXES ───────────────────────────────────────────
+    // ── GIN trigram indexes ───────────────────────────────────────────
     await queryRunner.query(
       `CREATE INDEX IF NOT EXISTS idx_subject_name_trgm ON subject USING gin (name gin_trgm_ops)`,
     );
@@ -70,7 +75,7 @@ export class Subjects1771748531640 implements MigrationInterface {
       `CREATE INDEX IF NOT EXISTS idx_subject_shortName_trgm ON subject USING gin ("shortName" gin_trgm_ops)`,
     );
 
-    // ── FOREIGN KEYS ──────────────────────────────────────────────────
+    // ── Foreign keys ──────────────────────────────────────────────────
     await queryRunner.createForeignKey(
       'subject',
       new TableForeignKey({

@@ -8,6 +8,11 @@ import {
 
 export class Playlists1771741991729 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
+    const schema = process.env.DB_SCHEMA ?? 'public';
+    await queryRunner.query(
+      `SET search_path TO "${schema}", extensions, public`,
+    );
+
     await queryRunner.createTable(
       new Table({
         name: 'playlists',
@@ -19,12 +24,7 @@ export class Playlists1771741991729 implements MigrationInterface {
             generationStrategy: 'uuid',
             default: 'uuid_generate_v4()',
           },
-          {
-            name: 'name',
-            type: 'varchar',
-            length: '255',
-            isNullable: false,
-          },
+          { name: 'name', type: 'varchar', length: '255', isNullable: false },
           { name: 'description', type: 'text', isNullable: true },
           {
             name: 'coverUrl',

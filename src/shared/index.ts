@@ -8,7 +8,7 @@ import {
   defaultSubjects,
 } from './default-data';
 
-export const SharedProvider: Provider[] = [TokenService, EntityVerifier];
+export const SharedProvider: Provider[] = [TokenService];
 
 export {
   TokenService,

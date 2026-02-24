@@ -8,6 +8,11 @@ import {
 
 export class ArtistRoles1771741639197 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
+    const schema = process.env.DB_SCHEMA ?? 'public';
+    await queryRunner.query(
+      `SET search_path TO "${schema}", extensions, public`,
+    );
+
     await queryRunner.createTable(
       new Table({
         name: 'artist_roles',
@@ -45,7 +50,7 @@ export class ArtistRoles1771741639197 implements MigrationInterface {
       true,
     );
 
-    // ── INDEXES ───────────────────────────────────────────────────────
+    // ── Indexes ───────────────────────────────────────────────────────
     await queryRunner.createIndex(
       'artist_roles',
       new TableIndex({ name: 'idx_artist_roles_id', columnNames: ['id'] }),
@@ -73,7 +78,7 @@ export class ArtistRoles1771741639197 implements MigrationInterface {
       }),
     );
 
-    // ── FOREIGN KEYS ──────────────────────────────────────────────────
+    // ── Foreign keys ──────────────────────────────────────────────────
     await queryRunner.createForeignKey(
       'artist_roles',
       new TableForeignKey({

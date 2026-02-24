@@ -80,8 +80,8 @@ export class Album extends BaseEntity {
   mainArtist?: Artist;
 
   @OneToMany(() => AlbumTracks, (at) => at.album)
-  albumTracks: AlbumTracks[] = [];
+  albumTracks: AlbumTracks[];
 
   @OneToMany(() => AlbumGenre, (ag) => ag.album)
-  albumGenres: AlbumGenre[] = [];
+  albumGenres: AlbumGenre[];
 }

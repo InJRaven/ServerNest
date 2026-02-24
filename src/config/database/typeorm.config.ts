@@ -10,7 +10,6 @@ const TypeORMConfig = (configService: ConfigService): TypeOrmModuleOptions => {
     ...DatabaseConfig(configService),
     entities: [...CoreEntities, ...AdminEntities, ...PublicEntities],
     schema: configService.get('DB_SCHEMA'),
-    migrations: ['src/database/migrations/**/*.ts'],
     synchronize: false,
     migrationsRun: false,
   };

@@ -7,13 +7,17 @@ import {
 } from 'typeorm';
 
 /**
- * Dependent:
+ * Phụ thuộc:
  * - Admins     (FK adminId, assigned_by_id, deleted_by)
  * - AdminRoles (FK roleId)
  */
-
 export class AdminRoleAssignments1771740464389 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
+    const schema = process.env.DB_SCHEMA ?? 'public';
+    await queryRunner.query(
+      `SET search_path TO "${schema}", extensions, public`,
+    );
+
     await queryRunner.createTable(
       new Table({
         name: 'admin_role_assignments',
@@ -96,10 +100,7 @@ export class AdminRoleAssignments1771740464389 implements MigrationInterface {
     );
     await queryRunner.createIndex(
       'admin_role_assignments',
-      new TableIndex({
-        name: 'idx_assignment_role',
-        columnNames: ['roleId'],
-      }),
+      new TableIndex({ name: 'idx_assignment_role', columnNames: ['roleId'] }),
     );
     await queryRunner.createIndex(
       'admin_role_assignments',
@@ -151,7 +152,6 @@ export class AdminRoleAssignments1771740464389 implements MigrationInterface {
       }),
     );
   }
-
   public async down(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.dropForeignKey(
       'admin_role_assignments',

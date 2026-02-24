@@ -8,6 +8,11 @@ import {
 
 export class Users1771741408058 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
+    const schema = process.env.DB_SCHEMA ?? 'public';
+    await queryRunner.query(
+      `SET search_path TO "${schema}", extensions, public`,
+    );
+
     await queryRunner.createTable(
       new Table({
         name: 'users',
@@ -64,7 +69,8 @@ export class Users1771741408058 implements MigrationInterface {
       }),
       true,
     );
-    // ── INDEXES ───────────────────────────────────────────────────────
+
+    // ── Indexes ───────────────────────────────────────────────────────
     await queryRunner.createIndex(
       'users',
       new TableIndex({ name: 'idx_user_id', columnNames: ['id'] }),
@@ -93,7 +99,7 @@ export class Users1771741408058 implements MigrationInterface {
       }),
     );
 
-    // ── GIN TRIGRAM INDEXES ───────────────────────────────────────────
+    // ── GIN trigram indexes ───────────────────────────────────────────
     await queryRunner.query(
       `CREATE INDEX IF NOT EXISTS idx_user_username_trgm ON users USING gin (username gin_trgm_ops)`,
     );
@@ -101,7 +107,7 @@ export class Users1771741408058 implements MigrationInterface {
       `CREATE INDEX IF NOT EXISTS idx_user_email_trgm ON users USING gin (email gin_trgm_ops)`,
     );
 
-    // ── FOREIGN KEYS ──────────────────────────────────────────────────
+    // ── Foreign keys ──────────────────────────────────────────────────
     await queryRunner.createForeignKey(
       'users',
       new TableForeignKey({

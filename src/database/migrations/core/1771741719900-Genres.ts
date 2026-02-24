@@ -8,6 +8,11 @@ import {
 
 export class Genres1771741719900 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
+    const schema = process.env.DB_SCHEMA ?? 'public';
+    await queryRunner.query(
+      `SET search_path TO "${schema}", extensions, public`,
+    );
+
     await queryRunner.createTable(
       new Table({
         name: 'genres',
@@ -46,17 +51,14 @@ export class Genres1771741719900 implements MigrationInterface {
       true,
     );
 
-    // ── INDEXES ───────────────────────────────────────────────────────
+    // ── Indexes ───────────────────────────────────────────────────────
     await queryRunner.createIndex(
       'genres',
       new TableIndex({ name: 'idx_genre_id', columnNames: ['id'] }),
     );
     await queryRunner.createIndex(
       'genres',
-      new TableIndex({
-        name: 'idx_genre_identify',
-        columnNames: ['identify'],
-      }),
+      new TableIndex({ name: 'idx_genre_identify', columnNames: ['identify'] }),
     );
     await queryRunner.createIndex(
       'genres',
@@ -82,7 +84,7 @@ export class Genres1771741719900 implements MigrationInterface {
       }),
     );
 
-    // ── GIN TRIGRAM INDEXES ───────────────────────────────────────────
+    // ── GIN trigram indexes ───────────────────────────────────────────
     await queryRunner.query(
       `CREATE INDEX IF NOT EXISTS idx_genre_name_trgm ON genres USING gin (name gin_trgm_ops)`,
     );
@@ -90,7 +92,7 @@ export class Genres1771741719900 implements MigrationInterface {
       `CREATE INDEX IF NOT EXISTS idx_genre_slug_trgm ON genres USING gin (slug gin_trgm_ops)`,
     );
 
-    // ── FOREIGN KEYS ──────────────────────────────────────────────────
+    // ── Foreign keys ──────────────────────────────────────────────────
     await queryRunner.createForeignKey(
       'genres',
       new TableForeignKey({

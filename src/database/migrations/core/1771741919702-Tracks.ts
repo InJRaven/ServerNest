@@ -8,6 +8,11 @@ import {
 
 export class Tracks1771741919702 implements MigrationInterface {
   public async up(queryRunner: QueryRunner): Promise<void> {
+    const schema = process.env.DB_SCHEMA ?? 'public';
+    await queryRunner.query(
+      `SET search_path TO "${schema}", extensions, public`,
+    );
+
     await queryRunner.createTable(
       new Table({
         name: 'tracks',
@@ -19,25 +24,10 @@ export class Tracks1771741919702 implements MigrationInterface {
             generationStrategy: 'uuid',
             default: 'uuid_generate_v4()',
           },
-          {
-            name: 'title',
-            type: 'varchar',
-            length: '255',
-            isNullable: false,
-          },
-          {
-            name: 'slug',
-            type: 'varchar',
-            isUnique: true,
-            isNullable: true,
-          },
+          { name: 'title', type: 'varchar', length: '255', isNullable: false },
+          { name: 'slug', type: 'varchar', isUnique: true, isNullable: true },
           { name: 'duration', type: 'integer', isNullable: false },
-          {
-            name: 'summary',
-            type: 'varchar',
-            length: '500',
-            isNullable: true,
-          },
+          { name: 'summary', type: 'varchar', length: '500', isNullable: true },
           { name: 'releaseDate', type: 'date', isNullable: true },
           { name: 'lyrics', type: 'text', isNullable: true },
           {
@@ -75,7 +65,8 @@ export class Tracks1771741919702 implements MigrationInterface {
       }),
       true,
     );
-    // ── INDEXES ───────────────────────────────────────────────────────
+
+    // ── Indexes ───────────────────────────────────────────────────────
     await queryRunner.createIndex(
       'tracks',
       new TableIndex({ name: 'idx_track_id', columnNames: ['id'] }),
@@ -121,7 +112,7 @@ export class Tracks1771741919702 implements MigrationInterface {
       }),
     );
 
-    // ── GIN TRIGRAM INDEXES ───────────────────────────────────────────
+    // ── GIN trigram indexes ───────────────────────────────────────────
     await queryRunner.query(
       `CREATE INDEX IF NOT EXISTS idx_track_title_trgm ON tracks USING gin (title gin_trgm_ops)`,
     );
@@ -129,7 +120,7 @@ export class Tracks1771741919702 implements MigrationInterface {
       `CREATE INDEX IF NOT EXISTS idx_track_slug_trgm ON tracks USING gin (slug gin_trgm_ops)`,
     );
 
-    // ── FOREIGN KEYS ──────────────────────────────────────────────────
+    // ── Foreign keys ──────────────────────────────────────────────────
     await queryRunner.createForeignKey(
       'tracks',
       new TableForeignKey({

@@ -1,7 +1,7 @@
 import { Module, Global } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { RedisConfig, Session, TypeORMConfig, Database } from '@config';
+import { TypeORMConfig, ConfigProvider } from '@config';
 import { SharedProvider } from '@shared';
 
 @Global()
@@ -19,7 +19,7 @@ import { SharedProvider } from '@shared';
       useFactory: TypeORMConfig,
     }),
   ],
-  providers: [Session, RedisConfig, Database, ...SharedProvider],
-  exports: [Session, RedisConfig, Database, ...SharedProvider],
+  providers: [...ConfigProvider, ...SharedProvider],
+  exports: [...ConfigProvider, ...SharedProvider],
 })
 export class ConfigServerModule {}
