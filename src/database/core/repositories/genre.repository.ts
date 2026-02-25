@@ -3,6 +3,9 @@ import { FindManyOptions, Repository } from 'typeorm';
 import { BaseRepository } from '@base';
 import { Genre } from '@CoreEntities';
 class GenreRepository extends BaseRepository<Genre> {
+  protected alias: string = '';
+  protected allowedColumns: string[] = [];
+  protected searchableFields = [];
   constructor(
     @InjectRepository(Genre)
     repository: Repository<Genre>,
