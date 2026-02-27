@@ -32,8 +32,9 @@ class RedisConfig implements OnModuleDestroy {
   async onModuleDestroy() {
     try {
       await this.client.quit();
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars, no-empty
-    } catch (_) {}
+    } catch (err) {
+      console.error('❌ Failed to close Redis connection gracefully:', err);
+    }
   }
 }
 export { RedisConfig };

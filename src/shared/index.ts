@@ -1,6 +1,5 @@
 import { Provider } from '@nestjs/common';
 import { TokenService } from './tokenService';
-import { EntityVerifier } from './entityVerifier';
 import {
   defaultGenres,
   defaultAdminRoles,
@@ -12,7 +11,6 @@ export const SharedProvider: Provider[] = [TokenService];
 
 export {
   TokenService,
-  EntityVerifier,
   defaultGenres,
   defaultAdminRoles,
   defaultArtsitRoles,

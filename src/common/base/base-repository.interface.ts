@@ -58,7 +58,7 @@ interface IBaseRepository<Entity extends ObjectLiteral> {
    * --------------------------------------------------------- */
   save(data: DeepPartial<Entity>): Promise<Entity>;
   merge(entity: Entity, data: DeepPartial<Entity>): Promise<Entity>;
-  updateField(id: string, field: keyof Entity, value: any): Promise<void>;
+  updateField(id: string, field: keyof Entity, value: unknown): Promise<void>;
   increment(id: string, field: keyof Entity, value?: number): Promise<void>;
   decrement(id: string, field: keyof Entity, value?: number): Promise<void>;
 
@@ -79,10 +79,10 @@ interface IBaseRepository<Entity extends ObjectLiteral> {
     ids: string[],
     options?: FindManyOptions<Entity>,
   ): Promise<Entity[]>;
-  findByField(field: keyof Entity, value: any): Promise<Entity | null>;
+  findByField(field: keyof Entity, value: unknown): Promise<Entity | null>;
   findAllByField(
     field: keyof Entity,
-    value: any,
+    value: unknown,
     options?: FindManyOptions<Entity>,
   ): Promise<Entity[]>;
   findRecent(

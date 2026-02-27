@@ -58,18 +58,14 @@ export abstract class GenericRepository<Entity extends ObjectLiteral>
     offset = 0,
     options?: FindManyOptions<Entity>,
   ): Promise<IPagination<Entity>> {
-    const total = await this.repository.count({
-      where: options?.where,
-    });
-
-    const data = await this.repository.find({
+    const [data, total] = await this.repository.findAndCount({
       ...options,
       take: limit,
       skip: offset,
     });
 
     const totalPages = Math.ceil(total / limit);
-    const page = Math.floor(offset / limit);
+    const page = Math.floor(offset / limit) + 1;
 
     return {
       data,
@@ -79,7 +75,7 @@ export abstract class GenericRepository<Entity extends ObjectLiteral>
         limit,
         totalPages,
         hasNextPage: offset + limit < total,
-        hasPreviousPage: page > 0,
+        hasPreviousPage: page > 1,
       },
     };
   }
@@ -103,6 +99,7 @@ export abstract class GenericRepository<Entity extends ObjectLiteral>
   async softDelete(id: string): Promise<boolean> {
     const result = await this.repository.update(id, {
       isDeleted: true,
+      deletedAt: new Date(),
     } as any);
     return (result.affected || 0) > 0;
   }

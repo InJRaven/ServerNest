@@ -13,9 +13,8 @@ import {
   ObjectLiteral,
   SelectQueryBuilder,
 } from 'typeorm';
-import { v4 as uuidv4 } from 'uuid';
 
-abstract class BaseRepository<Entity extends ObjectLiteral & { id: string }>
+abstract class BaseRepository<Entity extends ObjectLiteral>
   implements IBaseRepository<Entity>
 {
   constructor(protected repository: Repository<Entity>) {}
@@ -64,11 +63,7 @@ abstract class BaseRepository<Entity extends ObjectLiteral & { id: string }>
   }
 
   async createMany(data: DeepPartial<Entity>[]): Promise<Entity[]> {
-    const dataWithIds = data.map((item) => ({
-      ...item,
-      id: item.id || uuidv4(),
-    }));
-    const entities = this.repository.create(dataWithIds);
+    const entities = this.repository.create(data);
     return await this.repository.save(entities);
   }
 
@@ -88,7 +83,7 @@ abstract class BaseRepository<Entity extends ObjectLiteral & { id: string }>
   async updateField(
     id: string,
     field: keyof Entity,
-    value: any,
+    value: unknown,
   ): Promise<void> {
     await this.repository.update(id, { [field]: value } as any);
   }
@@ -119,7 +114,10 @@ abstract class BaseRepository<Entity extends ObjectLiteral & { id: string }>
   }
 
   async softDelete(id: string): Promise<boolean> {
-    const result = await this.repository.update(id, { isDeleted: true } as any);
+    const result = await this.repository.update(id, {
+      isDeleted: true,
+      deletedAt: new Date(),
+    } as any);
     return (result.affected || 0) > 0;
   }
 
@@ -131,6 +129,7 @@ abstract class BaseRepository<Entity extends ObjectLiteral & { id: string }>
   async restore(id: string): Promise<boolean> {
     const result = await this.repository.update(id, {
       isDeleted: false,
+      deletedAt: null,
     } as any);
     return (result.affected || 0) > 0;
   }
@@ -156,11 +155,14 @@ abstract class BaseRepository<Entity extends ObjectLiteral & { id: string }>
   ): Promise<Entity[]> {
     return await this.repository.find({
       ...options,
-      where: { id: In(ids) } as FindOptionsWhere<Entity>,
+      where: { id: In(ids) } as unknown as FindOptionsWhere<Entity>,
     });
   }
 
-  async findByField(field: keyof Entity, value: any): Promise<Entity | null> {
+  async findByField(
+    field: keyof Entity,
+    value: unknown,
+  ): Promise<Entity | null> {
     return await this.repository.findOne({
       where: {
         [field]: value,
@@ -171,7 +173,7 @@ abstract class BaseRepository<Entity extends ObjectLiteral & { id: string }>
 
   async findAllByField(
     field: keyof Entity,
-    value: any,
+    value: unknown,
     options?: FindManyOptions<Entity>,
   ): Promise<Entity[]> {
     return await this.repository.find({

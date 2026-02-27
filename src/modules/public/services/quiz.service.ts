@@ -93,7 +93,12 @@ export class QuizServices extends BaseService<QuizEntity> {
         const questionTexts = questions.map((q) => q.question);
 
         const quizzes = await manager.find(QuizEntity, {
-          where: { question: In(questionTexts) },
+          where: {
+            question: In(questionTexts),
+            subjectQuizzes: {
+              subjectId: subjectExit.id,
+            },
+          },
         });
 
         if (quizzes.length > 0) {

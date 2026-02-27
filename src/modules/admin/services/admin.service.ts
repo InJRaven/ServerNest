@@ -29,9 +29,9 @@ class AdminService extends BaseService<Admin> {
 
   async onModuleInit(): Promise<void> {
     const superAdminData = {
-      username: 'admin',
-      email: 'kuuhaku989898@gmail.com',
-      password: '123456',
+      username: process.env.DEFAULT_ADMIN_USERNAME || 'admin',
+      email: process.env.DEFAULT_ADMIN_EMAIL || 'admin@example.com',
+      password: process.env.DEFAULT_ADMIN_PASSWORD || 'securepassword',
       verified: true,
     };
 
